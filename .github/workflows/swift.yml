@@ -11,10 +11,15 @@ on:
 
 jobs:
   build:
-
+    strategy:
+      matrix:
+        swift: ["5.9.0"]
     runs-on: macos-latest
 
     steps:
+    - uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+      with:
+        swift-version: ${{ matrix.swift }}      
     - uses: actions/checkout@v3
     - name: Build
       run: swift build --package-path tyro-pay-api-ios -v
