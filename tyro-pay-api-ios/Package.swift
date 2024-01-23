@@ -12,13 +12,17 @@ let package = Package(
       name: "TyroApplePay",
       targets: ["TyroApplePay"]),
   ],
+  dependencies: [
+    .package(url: "https://github.com/Quick/Nimble.git", from: "13.2.0")
+  ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
     // Targets can depend on other targets in this package and products from dependencies.
     .target(
       name: "TyroApplePay"),
     .testTarget(
-      name: "tyro-pay-api-iosTests",
-      dependencies: ["TyroApplePay"]),
+      name: "TyroApplePayPackageTests",
+      dependencies: ["TyroApplePay", "Nimble"]),
   ]
+  // swiftLanguageVersions: [.version("5.7.1")]
 )
