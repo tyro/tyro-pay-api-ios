@@ -17,7 +17,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+    - uses: swift-actions/setup-swift@latest
       with:
         swift-version: ${{ matrix.swift }}      
     - uses: actions/checkout@v3
