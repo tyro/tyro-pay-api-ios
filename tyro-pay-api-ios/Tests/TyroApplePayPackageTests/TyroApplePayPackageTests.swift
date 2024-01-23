@@ -1,7 +1,7 @@
 import XCTest
 @testable import TyroApplePay
 
-final class tyro_pay_api_iosTests: XCTestCase {
+final class TyroApplePayPackageTests: XCTestCase {
     func testExample() throws {
         // XCTest Documentation
         // https://developer.apple.com/documentation/xctest
