@@ -5,6 +5,6 @@
       location = "group:SampleApp/SampleApp.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:tyro-pay-api-ios">
+      location = "group:TyroApplePay">
    </FileRef>
 </Workspace>

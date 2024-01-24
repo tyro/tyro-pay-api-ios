@@ -26,6 +26,15 @@
         "revision" : "c1f3dd66222d5e7a1a20afc237f7e7bc432c564f",
         "version" : "13.2.0"
       }
+    },
+    {
+      "identity" : "quick",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Quick/Quick.git",
+      "state" : {
+        "revision" : "a9e6c24033a25e158384d523a556c0b96c44a839",
+        "version" : "7.4.0"
+      }
     }
   ],
   "version" : 2

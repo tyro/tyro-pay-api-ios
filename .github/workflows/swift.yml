@@ -25,6 +25,6 @@ jobs:
       run: swift --version
     - uses: actions/checkout@v3
     - name: Build
-      run: swift build --package-path tyro-pay-api-ios -v
+      run: swift build --package-path TyroApplePay
     - name: Run tests
-      run: swift test --package-path tyro-pay-api-ios -v
+      run: swift test --package-path TyroApplePay
