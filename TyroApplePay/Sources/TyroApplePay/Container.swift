@@ -27,7 +27,8 @@ extension Container {
     self { PayRequestViewModel(
               applePayRequestService: self.applePayRequestService(),
               payRequestService: self.payRequestService(),
-              applePayViewControllerHandler: self.applePayViewControllerHandler()
+              applePayViewControllerHandler: self.applePayViewControllerHandler(),
+              payRequestPoller: self.payRequestPoller()
     ) }.singleton
   }
 
@@ -45,5 +46,9 @@ extension Container {
 
   var applePayViewControllerHandler: Factory<ApplePayViewControllerHandler> {
     self { ApplePayViewControllerHandler() }.singleton
+  }
+
+  var payRequestPoller: Factory<PayRequestPoller> {
+    self { PayRequestPoller(payRequestService: self.payRequestService()) }.singleton
   }
 }

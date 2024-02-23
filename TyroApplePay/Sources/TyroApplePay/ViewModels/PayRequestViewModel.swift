@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  PayRequestViewModel.swift
 //
 //
 //  Created by Ronaldo Gomes on 3/2/2024.
@@ -21,7 +21,7 @@ extension Array where Element == PaymentItem {
 }
 
 enum PayRequestViewModelState {
-  case started, cancelled, successed, errored(Error)
+  case started, polling, cancelled, successed, errored(Error)
 }
 
 typealias PaymentCompletionHandler = (_ result: TyroApplePay.Result) -> Void
@@ -43,18 +43,27 @@ class PayRequestViewModel: NSObject {
     .failed
   ]
 
+  private let validPayRequestPollingStatuses: [PayRequestStatus] = [
+    .success,
+    .failed,
+    .awaitingAuthentication
+  ]
+
   private let applePayRequestService: ApplePayRequestService
   private let payRequestService: PayRequestService
   private let applePayValidator: ApplePayValidator.Type
   private let applePayViewControllerHandler: ApplePayViewControllerHandler
+  private let payRequestPoller: PayRequestPoller
 
   init(applePayRequestService: ApplePayRequestService,
        payRequestService: PayRequestService,
        applePayViewControllerHandler: ApplePayViewControllerHandler,
+       payRequestPoller: PayRequestPoller,
        applePayValidator: ApplePayValidator.Type = TyroApplePay.self) {
     self.applePayRequestService = applePayRequestService
     self.payRequestService = payRequestService
     self.applePayViewControllerHandler = applePayViewControllerHandler
+    self.payRequestPoller = payRequestPoller
     self.applePayValidator = applePayValidator
   }
 
@@ -89,6 +98,9 @@ class PayRequestViewModel: NSObject {
     self.payRequestService.fetchPayRequest(with: paySecret) { [weak self] result in
       switch result {
       case .success(let payRequest):
+        guard let payRequest = payRequest else {
+          preconditionFailure("Unable to find payRequest")
+        }
         assert((self?.validPayRequestStatuses.contains(payRequest.status) ?? false),
                "Pay Request cannot be submitted when status is \(payRequest.status)")
 
@@ -102,9 +114,33 @@ class PayRequestViewModel: NSObject {
     }
   }
 
-  func handleApplePayResult(payment: PKPayment, completion: @escaping (Result<Void, NetworkError>) -> Void) throws {
+  func handleApplePayResult(payment: PKPayment, completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) throws {
     let applePayRequest = try ApplePayRequest.createApplePayRequest(from: payment.token.paymentData)
-    self.applePayRequestService.submitPayRequest(with: self.paySecret!, payload: applePayRequest, handler: completion)
+    self.applePayRequestService.submitPayRequest(with: self.paySecret!, payload: applePayRequest) { result in
+      switch result {
+      case .success(()):
+        self.handleCompleteFlow(completion: completion)
+      case .failure(let error):
+        self.completionHandler(.error(.failedWith(error)))
+      }
+    }
+  }
+
+  func handleCompleteFlow(completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) {
+
+    self.payRequestPoller.poll(paySecret: self.paySecret) { payRequestResponse in
+      return self.validPayRequestPollingStatuses.contains(payRequestResponse.status)
+    } completion: { payRequestResponse in
+
+      guard let payRequestResponse = payRequestResponse else {
+        completion(Result.failure(TyroApplePayError.invalidPaySecret))
+        return
+      }
+      if payRequestResponse.status == .success {
+        completion(Result.success(payRequestResponse))
+      }
+
+    }
   }
 }
 
@@ -117,18 +153,15 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
       try self.handleApplePayResult(payment: payment) { result in
         switch result {
         case .success:
-//          self.isCancelled.toggle()
           self.modelState = .successed
           completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
         case .failure(let error):
           self.modelState = .errored(error)
-//          self.failed = error
           completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
         }
       }
     } catch {
       self.modelState = .errored(error)
-//      self.failed = error
       completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
     }
   }

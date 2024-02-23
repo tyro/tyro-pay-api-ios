@@ -9,6 +9,7 @@ import Foundation
 
 public enum TyroApplePayError: Error {
   case invalid
+  case invalidPaySecret
   case unableToProcessPayment(String?)
   case failedWith(Error)
 }
