@@ -5,6 +5,8 @@
 //  Created by Ronaldo Gomes on 11/2/2024.
 //
 
+#if !os(macOS)
+
 import Foundation
 
 class PayRequestService {
@@ -39,3 +41,5 @@ class PayRequestService {
     }
   }
 }
+
+#endif

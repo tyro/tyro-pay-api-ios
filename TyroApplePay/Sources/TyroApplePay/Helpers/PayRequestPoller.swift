@@ -5,9 +5,11 @@
 //  Created by Ronaldo Gomes on 22/2/2024.
 //
 
+#if !os(macOS)
+
 import Foundation
 
-fileprivate final class Counter: @unchecked Sendable {
+private final class Counter: @unchecked Sendable {
 
   private(set) var counter: Int = 0;
 
@@ -75,3 +77,5 @@ internal class PayRequestPoller {
   }
 
 }
+
+#endif

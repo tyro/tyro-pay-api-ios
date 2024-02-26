@@ -5,6 +5,8 @@
 //  Created by Ronaldo Gomes on 11/2/2024.
 //
 
+#if !os(macOS)
+
 import Foundation
 import Factory
 
@@ -52,3 +54,5 @@ extension Container {
     self { PayRequestPoller(payRequestService: self.payRequestService()) }.singleton
   }
 }
+
+#endif

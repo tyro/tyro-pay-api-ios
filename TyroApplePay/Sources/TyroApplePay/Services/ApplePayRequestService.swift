@@ -5,6 +5,8 @@
 //  Created by Ronaldo Gomes on 7/2/2024.
 //
 
+#if !os(macOS)
+
 import Foundation
 
 class ApplePayRequestService {
@@ -34,3 +36,5 @@ class ApplePayRequestService {
     self.httpClient.sendRequest(to: endpoint, resultHandler: completion)
   }
 }
+
+#endif

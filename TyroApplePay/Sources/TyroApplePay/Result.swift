@@ -5,7 +5,7 @@
 //  Created by Ronaldo Gomes on 10/2/2024.
 //
 
-import Foundation
+#if !os(macOS)
 
 public extension TyroApplePay {
 
@@ -16,3 +16,5 @@ public extension TyroApplePay {
   }
 
 }
+
+#endif
