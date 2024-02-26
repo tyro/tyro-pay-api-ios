@@ -13,15 +13,20 @@ import PassKit
 
 class ApplePayViewControllerHandlerStub: ApplePayViewControllerHandler {
 
-  let jsonString: String
+  let jsonString: String?
 
-  init(jsonString: String) {
+  init(jsonString: String? = nil) {
     self.jsonString = jsonString
   }
 
   override func presentController(delegate: PKPaymentAuthorizationControllerDelegate, paymentRequest: PKPaymentRequest) {
     let controller = PKPaymentAuthorizationController()
-    let mockedPayment = PaymentMock(token: PaymentTokenMock(jsonString: self.jsonString))
+    guard let jsonString = self.jsonString else {
+      delegate.paymentAuthorizationControllerDidFinish(controller)
+      return
+    }
+
+    let mockedPayment = PaymentMock(token: PaymentTokenMock(jsonString: jsonString))
 
     delegate.paymentAuthorizationController?(controller, didAuthorizePayment: mockedPayment, handler: { result in
       delegate.paymentAuthorizationControllerDidFinish(controller)

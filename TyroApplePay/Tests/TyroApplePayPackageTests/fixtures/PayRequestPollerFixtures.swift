@@ -10,7 +10,7 @@
 import Foundation
 @testable import TyroApplePay
 
-extension PayRequestViewModelSpec {
+class PayRequestPollerFixtures {
 
   static var validApplePayResponseJsonString = """
   {

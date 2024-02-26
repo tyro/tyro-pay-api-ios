@@ -21,19 +21,16 @@ extension Array where Element == PaymentItem {
 }
 
 enum PayRequestViewModelState {
-  case started, polling, cancelled, successed, errored(Error)
+  case started, polling, cancelled, successed, failed(Error)
 }
 
 typealias PaymentCompletionHandler = (_ result: TyroApplePay.Result) -> Void
 
 class PayRequestViewModel: NSObject {
   private var modelState: PayRequestViewModelState!
-  private var isCancelled: Bool = true
   private var failed: Error?
 
   var completionHandler: PaymentCompletionHandler!
-
-  // TODO: find a better way to inject these values
   var config: TyroApplePay.Configuration!
   var paySecret: String!
 
@@ -114,7 +111,10 @@ class PayRequestViewModel: NSObject {
     }
   }
 
-  func handleApplePayResult(payment: PKPayment, completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) throws {
+  func handleApplePayResult(
+    payment: PKPayment,
+    completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) throws {
+
     let applePayRequest = try ApplePayRequest.createApplePayRequest(from: payment.token.paymentData)
     self.applePayRequestService.submitPayRequest(with: self.paySecret!, payload: applePayRequest) { result in
       switch result {
@@ -128,7 +128,7 @@ class PayRequestViewModel: NSObject {
 
   func handleCompleteFlow(completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) {
 
-    self.payRequestPoller.poll(paySecret: self.paySecret) { payRequestResponse in
+    self.payRequestPoller.start(with: self.paySecret) { payRequestResponse in
       return self.validPayRequestPollingStatuses.contains(payRequestResponse.status)
     } completion: { payRequestResponse in
 
@@ -156,12 +156,12 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
           self.modelState = .successed
           completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
         case .failure(let error):
-          self.modelState = .errored(error)
+          self.modelState = .failed(error)
           completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
         }
       }
     } catch {
-      self.modelState = .errored(error)
+      self.modelState = .failed(error)
       completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
     }
   }
@@ -172,7 +172,7 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
         switch self.modelState {
         case .successed:
           self.completionHandler(.success)
-        case .errored(let error):
+        case .failed(let error):
           self.completionHandler(.error(TyroApplePayError.failedWith(error)))
         default:
           self.completionHandler(.cancelled)

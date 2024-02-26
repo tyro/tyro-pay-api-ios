@@ -33,14 +33,16 @@ fileprivate extension DispatchQueue {
 
 internal class PayRequestPoller {
 
+  typealias PollerTimeInterval = UInt64
+
   private let payRequestService: PayRequestService
 
   init(payRequestService: PayRequestService) {
     self.payRequestService = payRequestService
   }
 
-  func poll(paySecret: String,
-            pollingInterval: TimeInterval = 2_000_000_000,
+  func start(with paySecret: String,
+            pollingInterval: PollerTimeInterval = 2_000_000_000, // 2_000_000_000 nanoseconds -> 2 seconds
             maxRetries: Int = 60,
             conditionFn: @escaping (PayRequestResponse) -> Bool,
             completion: @escaping (PayRequestResponse?) -> Void) {
@@ -48,14 +50,14 @@ internal class PayRequestPoller {
       do {
         let runCounter: Counter = Counter()
         var statusResult: PayRequestResponse? = nil
-        while (runCounter.counter <= maxRetries) {
+        while (!self.hasReachedMaxRetries(runCounter, maxRetries)) {
           statusResult = try await self.payRequestService.fetchPayRequest(with: paySecret)
 
           guard let statusResult = statusResult else {
-            return
+            break
           }
           if !conditionFn(statusResult) {
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            try await Task.sleep(nanoseconds: pollingInterval)
             runCounter.increment()
           } else {
             break
@@ -63,12 +65,12 @@ internal class PayRequestPoller {
         }
         completion(statusResult)
       } catch {
-        print("failed")
+        completion(nil)
       }
     }
   }
 
-  private func hasReachedMaxRetries(counter: Counter, limit: Int) -> Bool {
+  private func hasReachedMaxRetries(_ counter: Counter, _ limit: Int) -> Bool {
     return counter.counter == limit
   }
 

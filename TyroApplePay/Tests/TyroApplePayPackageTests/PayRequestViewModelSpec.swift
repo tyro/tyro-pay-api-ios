@@ -22,6 +22,7 @@ final class PayRequestViewModelSpec: QuickSpec  {
     payRequestServiceMock: PayRequestServiceMock,
     applePayRequestServiceMock: ApplePayRequestServiceMock,
     applePayViewControllerHandler: ApplePayViewControllerHandlerStub,
+    payRequestPoller: PayRequestPoller,
     paySecret: String,
     tyroApplePay: TyroApplePay
   ) -> PayRequestViewModel {
@@ -29,10 +30,16 @@ final class PayRequestViewModelSpec: QuickSpec  {
       applePayRequestService: applePayRequestServiceMock,
       payRequestService: payRequestServiceMock,
       applePayViewControllerHandler: applePayViewControllerHandler,
+      payRequestPoller: payRequestPoller,
       applePayValidator: TyroApplePayMock.self)
     viewModel.paySecret = paySecret
     viewModel.config = tyroApplePay.config
     return viewModel
+  }
+
+  class func payRequestPoller(
+    payRequestServiceMock: PayRequestService) -> PayRequestPoller {
+    return PayRequestPoller(payRequestService: payRequestServiceMock)
   }
 
   override class func spec() {
@@ -43,33 +50,38 @@ final class PayRequestViewModelSpec: QuickSpec  {
         let payRequestServiceMock = PayRequestServiceMock(
           baseUrl: "localhost",
           httpClient: Container.shared.httpClient(),
-          payRequestResponseJsonString: PayRequestViewModelSpec.payRequestAwaitingPaymentInputResponse)
+          payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput)
         var viewModel: PayRequestViewModel!
 
-        beforeEach {
-          let paySecret = "paySecret"
-          let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
-            liveMode: false,
-            merchantName: "",
-            merchantIdentifier: "merchant.test",
-            allowedCardNetworks: [.visa, .masterCard]
-          ))
+        let paySecret = "paySecret"
 
+        let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
+          liveMode: false,
+          merchantName: "",
+          merchantIdentifier: "merchant.test",
+          allowedCardNetworks: [.visa, .masterCard]
+        ))
+
+        beforeEach {
+          TyroApplePayMock[.isApplePayAvailable] = true
+        }
+
+        it("should invoke completion handler with successful Result") {
           viewModel = PayRequestViewModel(
             applePayRequestService: ApplePayRequestServiceMock(
               baseUrl: "localhost",
               httpClient: Container.shared.httpClient(),
               result: Result.success(())),
             payRequestService: payRequestServiceMock,
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(jsonString: validApplePayResponseJsonString),
+            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(jsonString: ApplePayRequestServiceFixtures.valid),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: PayRequestServiceMock(
+              baseUrl: "localhost",
+              httpClient: Container.shared.httpClient(),
+              payRequestResponseJsonString: PayRequestServiceFixtures.success)),
             applePayValidator: TyroApplePayMock.self)
           viewModel.paySecret = paySecret
           viewModel.config = tyroApplePay.config
 
-        }
-
-        it("should invoke completion handler with successful Result") {
-          TyroApplePayMock[.isApplePayAvailable] = true
           waitUntil { done in
 
             try! viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in
@@ -86,9 +98,22 @@ final class PayRequestViewModelSpec: QuickSpec  {
         }
 
         it("should invoke completion handler with cancelled Result") {
-          TyroApplePayMock[.isApplePayAvailable] = true
-          waitUntil { done in
+          viewModel = PayRequestViewModel(
+            applePayRequestService: ApplePayRequestServiceMock(
+              baseUrl: "localhost",
+              httpClient: Container.shared.httpClient(),
+              result: Result.success(())),
+            payRequestService: payRequestServiceMock,
+            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: PayRequestServiceMock(
+              baseUrl: "localhost",
+              httpClient: Container.shared.httpClient(),
+              payRequestResponseJsonString: PayRequestServiceFixtures.success)),
+            applePayValidator: TyroApplePayMock.self)
+          viewModel.paySecret = paySecret
+          viewModel.config = tyroApplePay.config
 
+          waitUntil { done in
             try! viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in
               switch result {
               case .cancelled:
@@ -98,7 +123,6 @@ final class PayRequestViewModelSpec: QuickSpec  {
               }
               done()
             })
-
           }
         }
       }
@@ -108,7 +132,7 @@ final class PayRequestViewModelSpec: QuickSpec  {
         let payRequestServiceMock = PayRequestServiceMock(
           baseUrl: "localhost",
           httpClient: Container.shared.httpClient(),
-          payRequestResponseJsonString: PayRequestViewModelSpec.payRequestAwaitingPaymentInputResponse)
+          payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput)
         var viewModel: PayRequestViewModel!
 
         let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
@@ -129,7 +153,8 @@ final class PayRequestViewModelSpec: QuickSpec  {
               httpClient: Container.shared.httpClient(),
               result: Result.success(())),
             payRequestService: payRequestServiceMock,
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(jsonString: validApplePayResponseJsonString),
+            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(jsonString: ApplePayRequestServiceFixtures.valid),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
             applePayValidator: TyroApplePayMock.self)
           viewModel.paySecret = paySecret
           viewModel.config = tyroApplePay.config
@@ -147,15 +172,16 @@ final class PayRequestViewModelSpec: QuickSpec  {
             payRequestServiceMock: PayRequestServiceMock(
                                     baseUrl: "localhost",
                                     httpClient: Container.shared.httpClient(),
-                                    payRequestResponseJsonString: PayRequestViewModelSpec.payRequestSuccessResponse),
-           applePayRequestServiceMock: ApplePayRequestServiceMock(
+                                    payRequestResponseJsonString: PayRequestServiceFixtures.success),
+            applePayRequestServiceMock: ApplePayRequestServiceMock(
                                     baseUrl: "localhost",
                                     httpClient: Container.shared.httpClient(),
                                     result: Result.success(())),
-           applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
-                                    jsonString: validApplePayResponseJsonString),
-           paySecret: "paySecret",
-           tyroApplePay: tyroApplePay)
+            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
+              jsonString: ApplePayRequestServiceFixtures.valid),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
+            paySecret: "paySecret",
+            tyroApplePay: tyroApplePay)
 
           expect {
             try viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in })
@@ -172,7 +198,8 @@ final class PayRequestViewModelSpec: QuickSpec  {
               httpClient: Container.shared.httpClient(),
               result: Result.success(())),
             applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
-              jsonString: validApplePayResponseJsonString),
+              jsonString: ApplePayRequestServiceFixtures.valid),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
@@ -189,18 +216,19 @@ final class PayRequestViewModelSpec: QuickSpec  {
           }
         }
 
-        fit("should invoke the completion closure with an error ") {
+        it("should invoke the completion closure with an error ") {
           let viewModel = setupViewModel(
             payRequestServiceMock: PayRequestServiceMock(
               baseUrl: "localhost",
               httpClient: Container.shared.httpClient(),
-              payRequestResponseJsonString: PayRequestViewModelSpec.payRequestAwaitingPaymentInputResponse),
+              payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput),
             applePayRequestServiceMock: ApplePayRequestServiceMock(
               baseUrl: "localhost",
               httpClient: Container.shared.httpClient(),
               result: Result.success(())),
             applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
-              jsonString: invalidApplePayResponseJsonString),
+              jsonString: ApplePayRequestServiceFixtures.invalid),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
