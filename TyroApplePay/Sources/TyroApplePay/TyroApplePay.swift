@@ -7,10 +7,6 @@ import Foundation
 import PassKit
 import SwiftUI
 
-#if DEBUG
-import netfox
-#endif
-
 protocol ApplePayValidator {
   static func isApplePayAvailable() -> Bool
   static func canSetupCard(allowedCards: [PKPaymentNetwork]) -> Bool
@@ -21,9 +17,6 @@ public class TyroApplePay: NSObject, ApplePayValidator {
 
   public init(config: TyroApplePay.Configuration) {
     self.config = config
-    #if DEBUG
-    NFX.sharedInstance().start()
-    #endif
   }
 
   public static func isApplePayAvailable() -> Bool {

@@ -17,17 +17,16 @@ let package = Package(
     .package(url: "https://github.com/realm/SwiftLint.git", from: "0.54.0"),
     .package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.53.1"),
     .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "2.0.0")),
-    .package(url: "https://github.com/hmlongco/Factory.git", from: "2.3.1"),
-    .package(url: "https://github.com/kasketis/netfox", from: "1.21.0")
+    .package(url: "https://github.com/hmlongco/Factory.git", from: "2.3.1")
   ],
   targets: [
     .target(
       name: "TyroApplePay",
-      dependencies: ["SwiftyBeaver", "Factory", "netfox"],
+      dependencies: ["SwiftyBeaver", "Factory"],
       plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
     ),
     .testTarget(
       name: "TyroApplePayPackageTests",
-      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver", "netfox"])
+      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"])
   ]
 )
