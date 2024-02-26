@@ -68,9 +68,7 @@ class PayRequestViewModel: NSObject {
     let paymentRequest = PKPaymentRequest()
     paymentRequest.supportedNetworks = config.allowedCardNetworks
     paymentRequest.paymentSummaryItems = paymentItems.createPKPaymentSummaryItems()
-    // TODO: move this to a configuration place
     paymentRequest.merchantIdentifier = config.merchantIdentifier
-    // TODO: create a list of all options in a configuration place
     paymentRequest.merchantCapabilities = [.threeDSecure]
     paymentRequest.countryCode = config.countryCode
     paymentRequest.currencyCode = config.currencyCode

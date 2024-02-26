@@ -15,7 +15,6 @@ struct ContentView: View {
       let paySecret = "paySecret"
       let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
         liveMode: false,
-        merchantName: "",
         merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
         allowedCardNetworks: [.visa, .masterCard]
       ))

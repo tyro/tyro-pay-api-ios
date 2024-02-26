@@ -20,7 +20,6 @@ public extension TyroApplePay {
 
   struct Configuration {
     let liveMode: Bool
-    let merchantName: String
     let merchantIdentifier: String
     let countryCode: String
     let currencyCode: String
@@ -28,13 +27,11 @@ public extension TyroApplePay {
     let allowedCardNetworks: [PKPaymentNetwork]
 
     public init(liveMode: Bool,
-                merchantName: String,
                 merchantIdentifier: String,
                 allowedCardNetworks: [PKPaymentNetwork],
                 countryCode: String = "AU",
                 currencyCode: String = "AUD") {
       self.liveMode = liveMode
-      self.merchantName = merchantName
       self.merchantIdentifier = merchantIdentifier
       self.allowedCardNetworks = allowedCardNetworks
       self.countryCode = countryCode

@@ -57,7 +57,6 @@ final class PayRequestViewModelSpec: QuickSpec  {
 
         let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
           liveMode: false,
-          merchantName: "",
           merchantIdentifier: "merchant.test",
           allowedCardNetworks: [.visa, .masterCard]
         ))
@@ -137,7 +136,6 @@ final class PayRequestViewModelSpec: QuickSpec  {
 
         let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
           liveMode: false,
-          merchantName: "",
           merchantIdentifier: "merchant.test",
           allowedCardNetworks: [.visa, .masterCard]
         ))
