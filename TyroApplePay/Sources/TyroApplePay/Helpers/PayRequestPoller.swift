@@ -5,13 +5,13 @@
 //  Created by Ronaldo Gomes on 22/2/2024.
 //
 
-#if !os(macOS)
+#if os(iOS)
 
 import Foundation
 
 private final class Counter: @unchecked Sendable {
 
-  private(set) var counter: Int = 0;
+  private(set) var counter: Int = 0
 
   func reset() {
     DispatchQueue.timerMutatingLock.sync {
@@ -44,15 +44,15 @@ internal class PayRequestPoller {
   }
 
   func start(with paySecret: String,
-            pollingInterval: PollerTimeInterval = 2_000_000_000, // 2_000_000_000 nanoseconds -> 2 seconds
-            maxRetries: Int = 60,
-            conditionFn: @escaping (PayRequestResponse) -> Bool,
-            completion: @escaping (PayRequestResponse?) -> Void) {
+             pollingInterval: PollerTimeInterval = 2_000_000_000, // 2_000_000_000 nanoseconds -> 2 seconds
+             maxRetries: Int = 60,
+             conditionFn: @escaping (PayRequestResponse) -> Bool,
+             completion: @escaping (PayRequestResponse?) -> Void) {
     Task {
       do {
         let runCounter: Counter = Counter()
-        var statusResult: PayRequestResponse? = nil
-        while (!self.hasReachedMaxRetries(runCounter, maxRetries)) {
+        var statusResult: PayRequestResponse?
+        while !self.hasReachedMaxRetries(runCounter, maxRetries) {
           statusResult = try await self.payRequestService.fetchPayRequest(with: paySecret)
 
           guard let statusResult = statusResult else {

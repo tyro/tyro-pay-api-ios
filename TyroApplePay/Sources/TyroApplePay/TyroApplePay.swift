@@ -1,7 +1,7 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-#if !os(macOS)
+#if os(iOS)
 
 import Foundation
 import PassKit

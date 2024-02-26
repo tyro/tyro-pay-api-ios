@@ -8,7 +8,7 @@
 import Foundation
 import PassKit
 
-#if !os(macOS)
+#if os(iOS)
 
 public extension TyroApplePay {
 
@@ -23,7 +23,7 @@ public extension TyroApplePay {
     let merchantIdentifier: String
     let countryCode: String
     let currencyCode: String
-    // TODO: Should allowed cards be our own type and mapped to passkit PKPaymentNetwork?
+    // TODO: Should allow cards be our own type and mapped to passkit PKPaymentNetwork?
     let allowedCardNetworks: [PKPaymentNetwork]
 
     public init(liveMode: Bool,

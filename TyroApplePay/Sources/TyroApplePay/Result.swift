@@ -5,7 +5,7 @@
 //  Created by Ronaldo Gomes on 10/2/2024.
 //
 
-#if !os(macOS)
+#if os(iOS)
 
 public extension TyroApplePay {
 

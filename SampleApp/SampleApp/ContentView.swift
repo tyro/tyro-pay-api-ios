@@ -7,7 +7,7 @@
 
 import TyroApplePay
 import SwiftUI
-import PassKit
+//import PassKit
 
 struct ContentView: View {
   var body: some View {

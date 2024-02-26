@@ -8,7 +8,7 @@
 import Foundation
 import PassKit
 
-#if !os(macOS)
+#if os(iOS)
 
 extension Array where Element == PaymentItem {
 

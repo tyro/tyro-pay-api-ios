@@ -7,7 +7,7 @@
 
 import Foundation
 
-#if !os(macOS)
+#if os(iOS)
 #if DEBUG
 extension Data {
   func printJSON() {

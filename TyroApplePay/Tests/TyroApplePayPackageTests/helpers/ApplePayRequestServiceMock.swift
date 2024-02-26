@@ -5,7 +5,7 @@
 //  Created by Ronaldo Gomes on 21/2/2024.
 //
 
-#if !os(macOS)
+#if os(iOS)
 
 import Foundation
 import PassKit
