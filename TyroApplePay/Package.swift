@@ -7,7 +7,6 @@ let package = Package(
   name: "TyroApplePay",
   platforms: [.macOS(.v13), .iOS(.v16)],
   products: [
-    // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(
       name: "TyroApplePay",
       targets: ["TyroApplePay"])
@@ -22,8 +21,6 @@ let package = Package(
     .package(url: "https://github.com/kasketis/netfox", from: "1.21.0")
   ],
   targets: [
-    // Targets are the basic building blocks of a package, defining a module or a test suite.
-    // Targets can depend on other targets in this package and products from dependencies.
     .target(
       name: "TyroApplePay",
       dependencies: ["SwiftyBeaver", "Factory", "netfox"],
@@ -31,7 +28,6 @@ let package = Package(
     ),
     .testTarget(
       name: "TyroApplePayPackageTests",
-      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"])
+      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver", "netfox"])
   ]
-  // swiftLanguageVersions: [.version("5.7.1")]
 )

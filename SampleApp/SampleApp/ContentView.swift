@@ -12,7 +12,7 @@ import PassKit
 struct ContentView: View {
   var body: some View {
     VStack {
-      let paySecret = "$2a$10$us7etM92Q/6Gz9FbsYzozuu683lUueC/fRBgDpEouPVHKjr17kyQ2"
+      let paySecret = "$2a$10$42YbfYamF2U/hXuyNPlEO.JAp2iTNOyAGRoxKGkX4gmUstdQ9xXsy"
       let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
         liveMode: false,
         merchantName: "",
