@@ -29,10 +29,12 @@ public enum PaymentItem {
   }
 }
 
+public typealias TyroApplePayButtonAction = (TyroApplePay.Result) -> Void
+
 public struct TyroApplePayButton: View {
   var paySecret: String
   var tyroApplePay: TyroApplePay
-  var delegate: TyroApplePayButtonDelegate
+  var action: TyroApplePayButtonAction
   var paymentItems: [PaymentItem]
   @State private var isPresented: Bool = false
   @Environment(\.dismiss) var dismiss
@@ -43,34 +45,22 @@ public struct TyroApplePayButton: View {
   public init(paySecret: String,
               paymentItems: [PaymentItem],
               tyroApplePay: TyroApplePay,
-              delegate: TyroApplePayButtonDelegate) {
+              action: @escaping TyroApplePayButtonAction) {
     self.paySecret = paySecret
     self.paymentItems = paymentItems
-    self.delegate = delegate
+    self.action = action
     self.tyroApplePay = tyroApplePay
   }
 
   public var body: some View {
     PayWithApplePayButton {
-
       viewModel.config = self.tyroApplePay.config
-      do {
-        try viewModel.startPayment(paySecret: self.paySecret, paymentItems: self.paymentItems) { result in
-          self.delegate.onPaymentResult(result: result)
-          dismiss()
-        }
-      } catch {
-        self.delegate.onPaymentResult(result: .error(TyroApplePayError.failedWith(error)))
+      Task {
+        let result = await viewModel.startPayment(paySecret: self.paySecret, paymentItems: self.paymentItems)
+        self.action(result)
         dismiss()
       }
-
     }.frame(width: 300, height: 100).opacity(TyroApplePay.isApplePayAvailable() ? 1 : 0)
-  }
-}
-
-extension TyroApplePayButton: TyroApplePayButtonDelegate {
-  public func onPaymentResult(result: TyroApplePay.Result) {
-    self.delegate.onPaymentResult(result: result)
   }
 }
 

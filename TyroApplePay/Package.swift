@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
   name: "TyroApplePay",
-  platforms: [.iOS(.v16)],
+  platforms: [.macOS(.v13), .iOS(.v16)],
   products: [
     .library(
       name: "TyroApplePay",
@@ -13,6 +13,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/Quick/Nimble.git", from: "13.2.0"),
+    .package(url: "https://github.com/Quick/Quick.git", from: "7.4.0"),
     .package(url: "https://github.com/realm/SwiftLint.git", from: "0.54.0"),
     .package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.53.1"),
     .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "2.0.0")),
@@ -26,6 +27,6 @@ let package = Package(
     ),
     .testTarget(
       name: "TyroApplePayPackageTests",
-      dependencies: ["TyroApplePay", "Nimble", "SwiftyBeaver"])
+      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"])
   ]
 )

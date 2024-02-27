@@ -9,7 +9,6 @@
 
 import Nimble
 import Quick
-import XCTest
 import Combine
 import Foundation
 @testable import TyroApplePay

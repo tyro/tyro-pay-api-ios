@@ -9,14 +9,13 @@
 
 import Nimble
 import Quick
-import XCTest
 import Combine
 import Foundation
 import Factory
 import PassKit
 @testable import TyroApplePay
 
-final class PayRequestViewModelSpec: QuickSpec  {
+final class PayRequestViewModelSpec: AsyncSpec  {
 
   class func setupViewModel(
     payRequestServiceMock: PayRequestServiceMock,
@@ -39,210 +38,204 @@ final class PayRequestViewModelSpec: QuickSpec  {
 
   class func payRequestPoller(
     payRequestServiceMock: PayRequestService) -> PayRequestPoller {
-    return PayRequestPoller(payRequestService: payRequestServiceMock)
+    return PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 1)
   }
 
   override class func spec() {
 
+    let paySecret = "paySecret"
+
+    let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
+      liveMode: false,
+      merchantIdentifier: "merchant.test",
+      allowedCardNetworks: [.visa, .masterCard]
+    ))
+
+    let awaitingPaymentInputPayRequestServiceMock = PayRequestServiceMock(
+      baseUrl: "localhost",
+      httpClient: Container.shared.httpClient(),
+      payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput)
+
+    let successPayRequestServiceMock = PayRequestServiceMock(
+      baseUrl: "localhost",
+      httpClient: Container.shared.httpClient(),
+      payRequestResponseJsonString: PayRequestServiceFixtures.success)
+
+    let invalidPayRequestServiceMock = PayRequestServiceMock(
+      baseUrl: "localhost",
+      httpClient: Container.shared.httpClient(),
+      payRequestResponseJsonString: PayRequestServiceFixtures.invalid)
+
+    let failedPayRequestServiceMock = PayRequestServiceMock(
+      baseUrl: "localhost",
+      httpClient: Container.shared.httpClient())
+
+    let successApplePayRequestServiceMock = ApplePayRequestServiceMock(
+      baseUrl: "localhost",
+      httpClient: Container.shared.httpClient(),
+      result: Result.success(()))
+
+    let validApplePayViewControllerHandlerStub = ApplePayViewControllerHandlerStub(jsonString: ApplePayRequestServiceFixtures.valid)
+    let invalidApplePayViewControllerHandlerStub = ApplePayViewControllerHandlerStub(jsonString: ApplePayRequestServiceFixtures.invalid)
+    let unauthorizedApplePayViewControllerHandlerStub = ApplePayViewControllerHandlerStub()
+
+    let successPayRequestPoller = payRequestPoller(
+      payRequestServiceMock: PayRequestServiceMock(
+        baseUrl: "localhost",
+        httpClient: Container.shared.httpClient(),
+        payRequestResponseJsonString: PayRequestServiceFixtures.success
+      )
+    )
+
+    let awaitingPaymentInputPayRequestPoller = payRequestPoller(
+      payRequestServiceMock: PayRequestServiceMock(
+        baseUrl: "localhost",
+        httpClient: Container.shared.httpClient(),
+        payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput
+      )
+    )
+
     describe("startPayment") {
 
+      beforeEach {
+        TyroApplePayMock.reset()
+        TyroApplePayMock[.isApplePayAvailable] = true
+      }
+
       context("when all goes well") {
-        let payRequestServiceMock = PayRequestServiceMock(
-          baseUrl: "localhost",
-          httpClient: Container.shared.httpClient(),
-          payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput)
-        var viewModel: PayRequestViewModel!
-
-        let paySecret = "paySecret"
-
-        let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
-          liveMode: false,
-          merchantIdentifier: "merchant.test",
-          allowedCardNetworks: [.visa, .masterCard]
-        ))
-
-        beforeEach {
-          TyroApplePayMock[.isApplePayAvailable] = true
-        }
-
         it("should invoke completion handler with successful Result") {
-          viewModel = PayRequestViewModel(
-            applePayRequestService: ApplePayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              result: Result.success(())),
-            payRequestService: payRequestServiceMock,
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(jsonString: ApplePayRequestServiceFixtures.valid),
-            payRequestPoller: payRequestPoller(payRequestServiceMock: PayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              payRequestResponseJsonString: PayRequestServiceFixtures.success)),
-            applePayValidator: TyroApplePayMock.self)
-          viewModel.paySecret = paySecret
-          viewModel.config = tyroApplePay.config
+          let viewModel = setupViewModel(
+            payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock,
+            applePayRequestServiceMock: successApplePayRequestServiceMock,
+            applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
+            payRequestPoller: successPayRequestPoller,
+            paySecret: paySecret,
+            tyroApplePay: tyroApplePay)
 
-          waitUntil { done in
-
-            try! viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in
-              switch result {
-              case .success:
-                _ = succeed()
-              default:
-                fail("should not have come here.")
-              }
-              done()
-            })
-
-          }
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .success = result else {
+              return .failed(reason: "it should have succeeded.")
+            }
+            return .succeeded
+          }.to(succeed())
         }
 
         it("should invoke completion handler with cancelled Result") {
-          viewModel = PayRequestViewModel(
-            applePayRequestService: ApplePayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              result: Result.success(())),
-            payRequestService: payRequestServiceMock,
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(),
-            payRequestPoller: payRequestPoller(payRequestServiceMock: PayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              payRequestResponseJsonString: PayRequestServiceFixtures.success)),
-            applePayValidator: TyroApplePayMock.self)
-          viewModel.paySecret = paySecret
-          viewModel.config = tyroApplePay.config
+          let viewModel = setupViewModel(
+            payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock,
+            applePayRequestServiceMock: successApplePayRequestServiceMock,
+            applePayViewControllerHandler: unauthorizedApplePayViewControllerHandlerStub,
+            payRequestPoller: successPayRequestPoller,
+            paySecret: paySecret,
+            tyroApplePay: tyroApplePay)
 
-          waitUntil { done in
-            try! viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in
-              switch result {
-              case .cancelled:
-                _ = succeed()
-              default:
-                fail("should not have come here.")
-              }
-              done()
-            })
-          }
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .cancelled = result else {
+              return .failed(reason: "it should have been cancelled")
+            }
+            return .succeeded
+
+          }.to(succeed())
         }
       }
 
-      context("when something goes wrong") {
+      context("when things go wrong") {
+        it("should throw if Apple Pay is not ready") {
+          TyroApplePayMock[.isApplePayAvailable] = false
+          let viewModel = setupViewModel(
+            payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock,
+            applePayRequestServiceMock: successApplePayRequestServiceMock,
+            applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
+            payRequestPoller: awaitingPaymentInputPayRequestPoller,
+            paySecret: paySecret,
+            tyroApplePay: tyroApplePay)
 
-        let payRequestServiceMock = PayRequestServiceMock(
-          baseUrl: "localhost",
-          httpClient: Container.shared.httpClient(),
-          payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput)
-        var viewModel: PayRequestViewModel!
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .error = result else {
+              return .failed(reason: "it should have failed if Apple Pay is not ready")
+            }
+            return .succeeded
+          }.to(succeed())
+        }
 
-        let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
-          liveMode: false,
-          merchantIdentifier: "merchant.test",
-          allowedCardNetworks: [.visa, .masterCard]
-        ))
-        let paySecret = "paySecret"
+        it("should throw if pay request not found") {
+          let viewModel = setupViewModel(
+            payRequestServiceMock: invalidPayRequestServiceMock,
+            applePayRequestServiceMock: successApplePayRequestServiceMock,
+            applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
+            payRequestPoller: awaitingPaymentInputPayRequestPoller,
+            paySecret: paySecret,
+            tyroApplePay: tyroApplePay)
 
-        beforeEach {
-          TyroApplePayMock.reset()
-          TyroApplePayMock[.isApplePayAvailable] = true
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .error = result else {
+              return .failed(reason: "it should have failed if pay request not found")
+            }
+            return .succeeded
+          }.to(succeed())
+        }
 
-          viewModel = PayRequestViewModel(
-            applePayRequestService: ApplePayRequestServiceMock(
+        it("should throw when PayRequest status is neither AWAITING_PAYMENT_INPUT, AWAITING_AUTHENTICATION or FAILED") {
+          let viewModel = setupViewModel(
+            payRequestServiceMock: successPayRequestServiceMock,
+            applePayRequestServiceMock: ApplePayRequestServiceMock(
               baseUrl: "localhost",
               httpClient: Container.shared.httpClient(),
               result: Result.success(())),
-            payRequestService: payRequestServiceMock,
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(jsonString: ApplePayRequestServiceFixtures.valid),
-            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
-            applePayValidator: TyroApplePayMock.self)
-          viewModel.paySecret = paySecret
-          viewModel.config = tyroApplePay.config
-        }
-
-        it("should throw an assertion if Apple Pay is not ready") {
-          TyroApplePayMock[.isApplePayAvailable] = false
-          expect {
-            try viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in })
-          }.to(throwAssertion())
-        }
-
-        it("should throw an assertion when PayRequest status is neither AWAITING_PAYMENT_INPUT, AWAITING_AUTHENTICATION or FAILED") {
-          let viewModel = setupViewModel(
-            payRequestServiceMock: PayRequestServiceMock(
-                                    baseUrl: "localhost",
-                                    httpClient: Container.shared.httpClient(),
-                                    payRequestResponseJsonString: PayRequestServiceFixtures.success),
-            applePayRequestServiceMock: ApplePayRequestServiceMock(
-                                    baseUrl: "localhost",
-                                    httpClient: Container.shared.httpClient(),
-                                    result: Result.success(())),
             applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
               jsonString: ApplePayRequestServiceFixtures.valid),
-            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
+            payRequestPoller: payRequestPoller(payRequestServiceMock: successPayRequestServiceMock),
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
-          expect {
-            try viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in })
-          }.to(throwAssertion())
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .error = result else {
+              return .failed(reason: "it should have failed when PayRequest status is neither AWAITING_PAYMENT_INPUT, AWAITING_AUTHENTICATION or FAILED")
+            }
+            return .succeeded
+          }.to(succeed())
         }
 
         it("should throw TyroApplePayError.failedWith(NetworkError) if unable to fetch Pay Request") {
           let viewModel = setupViewModel(
-            payRequestServiceMock: PayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient()),
-            applePayRequestServiceMock: ApplePayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              result: Result.success(())),
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
-              jsonString: ApplePayRequestServiceFixtures.valid),
-            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
+            payRequestServiceMock: failedPayRequestServiceMock,
+            applePayRequestServiceMock: successApplePayRequestServiceMock,
+            applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
+            payRequestPoller: payRequestPoller(payRequestServiceMock: failedPayRequestServiceMock),
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
-          waitUntil { done in
-            try! viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in
-              switch result {
-              case .error(let error):
-                expect(error).to(matchError(TyroApplePayError.failedWith(NetworkError.unknown)))
-              default:
-                fail("should not have come here.")
-              }
-              done()
-            })
-          }
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .error = result else {
+              return .failed(reason: "it should have failed if unable to fetch Pay Request")
+            }
+            return .succeeded
+          }.to(succeed())
         }
 
-        it("should invoke the completion closure with an error ") {
+        it("should invoke the completion closure with an error") {
           let viewModel = setupViewModel(
-            payRequestServiceMock: PayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              payRequestResponseJsonString: PayRequestServiceFixtures.awaitingPaymentInput),
-            applePayRequestServiceMock: ApplePayRequestServiceMock(
-              baseUrl: "localhost",
-              httpClient: Container.shared.httpClient(),
-              result: Result.success(())),
-            applePayViewControllerHandler: ApplePayViewControllerHandlerStub(
-              jsonString: ApplePayRequestServiceFixtures.invalid),
-            payRequestPoller: payRequestPoller(payRequestServiceMock: payRequestServiceMock),
+            payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock,
+            applePayRequestServiceMock: successApplePayRequestServiceMock,
+            applePayViewControllerHandler: invalidApplePayViewControllerHandlerStub,
+            payRequestPoller: payRequestPoller(payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock),
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
-          waitUntil { done in
-            try! viewModel.startPayment(paySecret: "paySecret", paymentItems: [], completion: { (result: TyroApplePay.Result) in
-              switch result {
-              case .error(let error):
-                expect(error).to(matchError(TyroApplePayError.failedWith(NetworkError.decode)))
-              default:
-                fail("should not have come here.")
-              }
-              done()
-            })
-          }
+          await expect {
+            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            guard case .error = result else {
+              return .failed(reason: "it should invoke the completion closure with an error")
+            }
+            return .succeeded
+          }.to(succeed())
         }
-
       }
     }
   }

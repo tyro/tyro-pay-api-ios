@@ -22,8 +22,7 @@ class ApplePayViewControllerHandlerStub: ApplePayViewControllerHandler {
   override func presentController(delegate: PKPaymentAuthorizationControllerDelegate, paymentRequest: PKPaymentRequest) {
     let controller = PKPaymentAuthorizationController()
     guard let jsonString = self.jsonString else {
-      delegate.paymentAuthorizationControllerDidFinish(controller)
-      return
+      return delegate.paymentAuthorizationControllerDidFinish(controller)
     }
 
     let mockedPayment = PaymentMock(token: PaymentTokenMock(jsonString: jsonString))

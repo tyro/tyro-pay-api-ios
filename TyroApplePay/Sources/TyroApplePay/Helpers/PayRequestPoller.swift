@@ -38,14 +38,19 @@ internal class PayRequestPoller {
   typealias PollerTimeInterval = UInt64
 
   private let payRequestService: PayRequestService
+  private let pollingInterval: PollerTimeInterval
+  private let maxRetries: Int
 
-  init(payRequestService: PayRequestService) {
+
+  init(payRequestService: PayRequestService,
+       pollingInterval: PollerTimeInterval = 2_000_000_000, // 2_000_000_000 nanoseconds -> 2 seconds
+       maxRetries: Int = 60) {
     self.payRequestService = payRequestService
+    self.pollingInterval = pollingInterval
+    self.maxRetries = maxRetries
   }
 
   func start(with paySecret: String,
-             pollingInterval: PollerTimeInterval = 2_000_000_000, // 2_000_000_000 nanoseconds -> 2 seconds
-             maxRetries: Int = 60,
              conditionFn: @escaping (PayRequestResponse) -> Bool,
              completion: @escaping (PayRequestResponse?) -> Void) {
     Task {

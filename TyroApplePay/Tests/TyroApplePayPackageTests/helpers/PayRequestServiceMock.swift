@@ -23,7 +23,10 @@ class PayRequestServiceMock: PayRequestService {
   override func fetchPayRequest(with paySecret: String,
                                 handler completion: @escaping (Result<PayRequestResponse?, NetworkError>) -> Void) {
     if let payRequestResponseJsonString = self.payRequestResponseJsonString {
-      let payRequestResponse: PayRequestResponse = try! JSONDecoder().decode(PayRequestResponse.self, from: payRequestResponseJsonString.data(using: .utf8)!)
+      guard let payRequestResponse: PayRequestResponse = try? JSONDecoder().decode(PayRequestResponse.self, from: payRequestResponseJsonString.data(using: .utf8)!) else {
+        completion(Result.success(nil))
+        return
+      }
       completion(Result.success(payRequestResponse))
     } else {
       completion(.failure(NetworkError.unknown))

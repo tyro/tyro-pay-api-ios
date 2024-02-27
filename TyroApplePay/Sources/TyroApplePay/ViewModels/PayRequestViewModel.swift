@@ -80,31 +80,47 @@ class PayRequestViewModel: NSObject {
     return self.applePayValidator.isApplePayAvailable()
   }
 
-  public func startPayment(paySecret: String,
-                           paymentItems: [PaymentItem],
-                           completion: @escaping PaymentCompletionHandler) throws {
+  public func startPayment(paySecret: String, paymentItems: [PaymentItem]) async -> TyroApplePay.Result {
+    return await withCheckedContinuation { continuation in
+      self.startPayment(paySecret: paySecret, paymentItems: paymentItems) { result in
+        continuation.resume(returning: result)
+      }
+    }
+  }
+
+  private func startPayment(paySecret: String,
+                            paymentItems: [PaymentItem],
+                            completion: @escaping PaymentCompletionHandler) {
     self.modelState = .started
     self.completionHandler = completion
     self.paySecret = paySecret
 
     Logger.shared.info("startPayment()")
-    assert(isApplePayReady(), "Apple Pay is not available")
+    if !isApplePayReady() {
+      return completion(.error(.applePayNotReady))
+    }
 
     self.payRequestService.fetchPayRequest(with: paySecret) { [weak self] result in
       switch result {
       case .success(let payRequest):
         guard let payRequest = payRequest else {
-          preconditionFailure("Unable to find payRequest")
+          return completion(.error(.payRequestNotFound))
         }
-        assert((self?.validPayRequestStatuses.contains(payRequest.status) ?? false),
-               "Pay Request cannot be submitted when status is \(payRequest.status)")
+        guard let validPayRequestStatuses = self?.validPayRequestStatuses,
+                validPayRequestStatuses.contains(payRequest.status) else {
+          return completion(.error(
+            TyroApplePayError.invalidPayRequestStatus(
+              "Pay Request cannot be submitted when status is \(payRequest.status)"
+            )
+          ))
+        }
 
         let paymentRequest = self?.createPaymentRequest(paymentItems)
 
         self?.applePayViewControllerHandler.presentController(delegate: self!, paymentRequest: paymentRequest!)
 
       case .failure(let error):
-        completion(.error(.failedWith(error)))
+        return completion(.error(.failedWith(error)))
       }
     }
   }
