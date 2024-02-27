@@ -10,9 +10,12 @@ import SwiftUI
 //import PassKit
 
 struct ContentView: View {
+
+  @State private var paymentSuccessful = false
+
   var body: some View {
     VStack {
-      let paySecret = "$2a$10$KoZFi4jLe814JCE/ZIyh3.CRxtTsXz1lhqQUIDvWP/guNeceOlwP2"
+      let paySecret = "$2a$10$RAGdArKtXD8/WlWUVfs55uZmw1iN6o9Sfalbw0whlfdvABUKjwpsK"
       let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
         liveMode: false,
         merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
@@ -28,12 +31,16 @@ struct ContentView: View {
         case .cancelled:
           print("Sample App -> ContentView -> ApplePay cancelled")
         case .success:
+          paymentSuccessful = true
           print("Sample App -> ContentView -> payment successful")
         case .error(let error):
           print(error)
         }
       }
         .frame(width: 300, height: 100).opacity(TyroApplePay.isApplePayAvailable() ? 1 : 0)
+        .alert(isPresented: $paymentSuccessful) {
+          Alert(title: Text("Payment Request"), message: Text("Payment was successful"), dismissButton: .default(Text("Ok")))
+        }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.blue)

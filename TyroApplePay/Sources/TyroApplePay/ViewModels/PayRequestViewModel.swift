@@ -24,13 +24,10 @@ enum PayRequestViewModelState {
   case started, polling, cancelled, successed, failed(Error)
 }
 
-typealias PaymentCompletionHandler = (_ result: TyroApplePay.Result) -> Void
-
 class PayRequestViewModel: NSObject {
   private var modelState: PayRequestViewModelState!
   private var failed: Error?
 
-  var completionHandler: PaymentCompletionHandler!
   var config: TyroApplePay.Configuration!
   var paySecret: String!
 
@@ -51,6 +48,8 @@ class PayRequestViewModel: NSObject {
   private let applePayValidator: ApplePayValidator.Type
   private let applePayViewControllerHandler: ApplePayViewControllerHandler
   private let payRequestPoller: PayRequestPoller
+
+  private var applePayContinuation: CheckedContinuation<TyroApplePay.Result, Error>?
 
   init(applePayRequestService: ApplePayRequestService,
        payRequestService: PayRequestService,
@@ -81,79 +80,61 @@ class PayRequestViewModel: NSObject {
   }
 
   public func startPayment(paySecret: String, paymentItems: [PaymentItem]) async -> TyroApplePay.Result {
-    return await withCheckedContinuation { continuation in
-      self.startPayment(paySecret: paySecret, paymentItems: paymentItems) { result in
-        continuation.resume(returning: result)
-      }
-    }
-  }
-
-  private func startPayment(paySecret: String,
-                            paymentItems: [PaymentItem],
-                            completion: @escaping PaymentCompletionHandler) {
     self.modelState = .started
-    self.completionHandler = completion
     self.paySecret = paySecret
 
     Logger.shared.info("startPayment()")
     if !isApplePayReady() {
-      return completion(.error(.applePayNotReady))
+      return .error(.applePayNotReady)
     }
 
-    self.payRequestService.fetchPayRequest(with: paySecret) { [weak self] result in
-      switch result {
-      case .success(let payRequest):
-        guard let payRequest = payRequest else {
-          return completion(.error(.payRequestNotFound))
-        }
-        guard let validPayRequestStatuses = self?.validPayRequestStatuses,
-                validPayRequestStatuses.contains(payRequest.status) else {
-          return completion(.error(
-            TyroApplePayError.invalidPayRequestStatus(
-              "Pay Request cannot be submitted when status is \(payRequest.status)"
-            )
-          ))
-        }
-
-        let paymentRequest = self?.createPaymentRequest(paymentItems)
-
-        self?.applePayViewControllerHandler.presentController(delegate: self!, paymentRequest: paymentRequest!)
-
-      case .failure(let error):
-        return completion(.error(.failedWith(error)))
+    do {
+      let payRequest = try await self.payRequestService.fetchPayRequest(with: paySecret)
+      guard let payRequest = payRequest else {
+        return .error(.payRequestNotFound)
       }
+      if !self.validPayRequestStatuses.contains(payRequest.status) {
+        return .error(
+          TyroApplePayError.invalidPayRequestStatus(
+            "Pay Request cannot be submitted when status is \(payRequest.status)"
+          )
+        )
+      }
+
+      let paymentRequest = self.createPaymentRequest(paymentItems)
+
+      return try await withCheckedThrowingContinuation { continuation in
+        applePayContinuation = continuation
+        self.applePayViewControllerHandler.presentController(delegate: self, paymentRequest: paymentRequest)
+      }
+
+    } catch {
+      return .error(.failedWith(error))
     }
   }
 
   func handleApplePayResult(
-    payment: PKPayment,
-    completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) throws {
+    payment: PKPayment) async throws -> PayRequestResponse {
 
     let applePayRequest = try ApplePayRequest.createApplePayRequest(from: payment.token.paymentData)
-    self.applePayRequestService.submitPayRequest(with: self.paySecret!, payload: applePayRequest) { result in
-      switch result {
-      case .success(()):
-        self.handleCompleteFlow(completion: completion)
-      case .failure(let error):
-        self.completionHandler(.error(.failedWith(error)))
-      }
-    }
+    try await self.applePayRequestService.submitPayRequest(with: self.paySecret, payload: applePayRequest)
+    return try await self.handleCompleteFlow()
   }
 
-  func handleCompleteFlow(completion: @escaping (Result<PayRequestResponse, TyroApplePayError>) -> Void) {
-
-    self.payRequestPoller.start(with: self.paySecret) { payRequestResponse in
+  func handleCompleteFlow() async throws -> PayRequestResponse {
+    let result = await self.payRequestPoller.start(with: self.paySecret) { payRequestResponse in
       return self.validPayRequestPollingStatuses.contains(payRequestResponse.status)
-    } completion: { payRequestResponse in
+    }
+    guard let payRequestResponse = result else {
+      throw TyroApplePayError.unableToFetchPayRequest
+    }
 
-      guard let payRequestResponse = payRequestResponse else {
-        completion(Result.failure(TyroApplePayError.invalidPaySecret))
-        return
-      }
-      if payRequestResponse.status == .success {
-        completion(Result.success(payRequestResponse))
-      }
-
+    switch payRequestResponse.status {
+    case .success: return payRequestResponse
+    case .failed: throw TyroApplePayError.payRequestFailed
+    case .processing: throw TyroApplePayError.payRequestTimeout
+    default:
+      throw TyroApplePayError.unknown
     }
   }
 }
@@ -163,20 +144,16 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
   func paymentAuthorizationController(_ controller: PKPaymentAuthorizationController,
                                       didAuthorizePayment payment: PKPayment,
                                       handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
-    do {
-      try self.handleApplePayResult(payment: payment) { result in
-        switch result {
-        case .success:
-          self.modelState = .successed
-          completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
-        case .failure(let error):
-          self.modelState = .failed(error)
-          completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
-        }
+
+    Task {
+      do {
+        _ = try await self.handleApplePayResult(payment: payment)
+        self.modelState = .successed
+        completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
+      } catch {
+        self.modelState = .failed(error)
+        completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
       }
-    } catch {
-      self.modelState = .failed(error)
-      completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
     }
   }
 
@@ -185,11 +162,11 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
       DispatchQueue.main.async {
         switch self.modelState {
         case .successed:
-          self.completionHandler(.success)
+          self.applePayContinuation?.resume(returning: .success)
         case .failed(let error):
-          self.completionHandler(.error(TyroApplePayError.failedWith(error)))
+          self.applePayContinuation?.resume(returning: .error(TyroApplePayError.failedWith(error)))
         default:
-          self.completionHandler(.cancelled)
+          self.applePayContinuation?.resume(returning: .cancelled)
         }
       }
     }

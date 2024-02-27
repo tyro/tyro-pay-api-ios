@@ -35,6 +35,15 @@ class ApplePayRequestService {
 
     self.httpClient.sendRequest(to: endpoint, resultHandler: completion)
   }
+
+  func submitPayRequest(with paySecret: String,
+                        payload: ApplePayRequest) async throws {
+    _ = try await withCheckedThrowingContinuation { continuation in
+      self.submitPayRequest(with: paySecret, payload: payload) { result in
+        continuation.resume(returning: result)
+      }
+    }
+  }
 }
 
 #endif

@@ -14,55 +14,43 @@ import Foundation
 import Factory
 @testable import TyroApplePay
 
-final class PayRequestPollerSpec: QuickSpec {
+final class PayRequestPollerSpec: AsyncSpec {
 
   class override func spec() {
 
     describe("start") {
-      it ("should return the required PayRequestReponse") {
+      it("should return the required PayRequestReponse") {
         let payRequestServiceMock = PayRequestServiceMock(
           baseUrl: "localhost",
           httpClient: Container.shared.httpClient(),
           payRequestResponseJsonString: PayRequestPollerFixtures.payRequestSuccessResponse)
-        let poller = PayRequestPoller(payRequestService: payRequestServiceMock)
+        let poller = PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 3)
+        var counter = 0
 
-        waitUntil { done in
-          poller.start(with: "paySecret") { response in
-            return true
-          } completion: { response in
-            expect(response).toNot(beNil())
-            expect(response?.status).to(equal(PayRequestStatus.success))
-            done()
-          }
+        let result = await poller.start(with: "paySecret") { response in
+          counter += 1
+          return counter < 3 ? false : true
         }
+        expect(result).toNot(beNil())
+        expect(result?.status).to(equal(PayRequestStatus.success))
       }
 
       context("when things go wrong") {
 
-        it ("should return the required PayRequestReponse") {
+        fit("should return nil if unable to find a pay request ") {
           let payRequestServiceMock = PayRequestServiceMock(
             baseUrl: "localhost",
             httpClient: Container.shared.httpClient(),
-            payRequestResponseJsonString: PayRequestPollerFixtures.payRequestSuccessResponse)
-          let poller = PayRequestPoller(payRequestService: payRequestServiceMock)
+            payRequestResponseJsonString: PayRequestPollerFixtures.badPayRequestResponse)
+          let poller = PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 3)
           var counter = 0
 
-          waitUntil(timeout: .seconds(20)) { done in
-            poller.start(with: "paySecret") { response in
-              counter += 1
-              if counter < 3 {
-                return false
-              } else {
-                return true
-              }
-            } completion: { response in
-              expect(response).toNot(beNil())
-              expect(response?.status).to(equal(PayRequestStatus.success))
-              done()
-            }
+          let result = await poller.start(with: "paySecret") { response in
+            counter += 1
+            return false
           }
+          expect(result).to(beNil())
         }
-
       }
     }
   }

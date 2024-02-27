@@ -24,13 +24,10 @@ private final class Counter: @unchecked Sendable {
       self.counter += 1
     }
   }
-
 }
 
 fileprivate extension DispatchQueue {
-
   static let timerMutatingLock = DispatchQueue(label: "timer.lock.queue")
-
 }
 
 internal class PayRequestPoller {
@@ -41,7 +38,6 @@ internal class PayRequestPoller {
   private let pollingInterval: PollerTimeInterval
   private let maxRetries: Int
 
-
   init(payRequestService: PayRequestService,
        pollingInterval: PollerTimeInterval = 2_000_000_000, // 2_000_000_000 nanoseconds -> 2 seconds
        maxRetries: Int = 60) {
@@ -51,29 +47,26 @@ internal class PayRequestPoller {
   }
 
   func start(with paySecret: String,
-             conditionFn: @escaping (PayRequestResponse) -> Bool,
-             completion: @escaping (PayRequestResponse?) -> Void) {
-    Task {
-      do {
-        let runCounter: Counter = Counter()
-        var statusResult: PayRequestResponse?
-        while !self.hasReachedMaxRetries(runCounter, maxRetries) {
-          statusResult = try await self.payRequestService.fetchPayRequest(with: paySecret)
+             conditionFn: @escaping (PayRequestResponse) -> Bool) async -> PayRequestResponse? {
+    do {
+      let runCounter: Counter = Counter()
+      var statusResult: PayRequestResponse?
+      while !self.hasReachedMaxRetries(runCounter, maxRetries) {
+        statusResult = try await self.payRequestService.fetchPayRequest(with: paySecret)
 
-          guard let statusResult = statusResult else {
-            break
-          }
-          if !conditionFn(statusResult) {
-            try await Task.sleep(nanoseconds: pollingInterval)
-            runCounter.increment()
-          } else {
-            break
-          }
+        guard let statusResult = statusResult else {
+          break
         }
-        completion(statusResult)
-      } catch {
-        completion(nil)
+        if !conditionFn(statusResult) {
+          try await Task.sleep(nanoseconds: pollingInterval)
+          runCounter.increment()
+        } else {
+          break
+        }
       }
+      return statusResult
+    } catch {
+      return nil
     }
   }
 

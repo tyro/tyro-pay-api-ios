@@ -10,13 +10,17 @@
 import Foundation
 
 public enum TyroApplePayError: Error {
+  case applePayNotReady
+  case failedWith(Error)
   case invalid
   case invalidPaySecret
-  case unableToProcessPayment(String?)
-  case failedWith(Error)
-  case applePayNotReady
-  case payRequestNotFound
   case invalidPayRequestStatus(String)
+  case payRequestFailed
+  case payRequestNotFound
+  case payRequestTimeout
+  case unableToProcessPayment(String?)
+  case unableToFetchPayRequest
+  case unknown
 }
 
 #endif
