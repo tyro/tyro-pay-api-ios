@@ -19,19 +19,15 @@ public extension TyroApplePay {
   }
 
   struct Configuration {
-    let liveMode: Bool
     let merchantIdentifier: String
     let countryCode: String
     let currencyCode: String
-    // TODO: Should allow cards be our own type and mapped to passkit PKPaymentNetwork?
     let allowedCardNetworks: [PKPaymentNetwork]
 
-    public init(liveMode: Bool,
-                merchantIdentifier: String,
+    public init(merchantIdentifier: String,
                 allowedCardNetworks: [PKPaymentNetwork],
                 countryCode: String = "AU",
                 currencyCode: String = "AUD") {
-      self.liveMode = liveMode
       self.merchantIdentifier = merchantIdentifier
       self.allowedCardNetworks = allowedCardNetworks
       self.countryCode = countryCode

@@ -46,7 +46,6 @@ final class PayRequestViewModelSpec: AsyncSpec  {
     let paySecret = "paySecret"
 
     let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
-      liveMode: false,
       merchantIdentifier: "merchant.test",
       allowedCardNetworks: [.visa, .masterCard]
     ))

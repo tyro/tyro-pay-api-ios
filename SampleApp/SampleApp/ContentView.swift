@@ -7,17 +7,17 @@
 
 import TyroApplePay
 import SwiftUI
-//import PassKit
 
 struct ContentView: View {
 
   @State private var paymentSuccessful = false
+  @State private var paymentFailed = false
+  @State private var paymentError: TyroApplePayError?
 
   var body: some View {
     VStack {
       let paySecret = "$2a$10$RAGdArKtXD8/WlWUVfs55uZmw1iN6o9Sfalbw0whlfdvABUKjwpsK"
       let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
-        liveMode: false,
         merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
         allowedCardNetworks: [.visa, .masterCard]
       ))
@@ -34,6 +34,8 @@ struct ContentView: View {
           paymentSuccessful = true
           print("Sample App -> ContentView -> payment successful")
         case .error(let error):
+          paymentFailed = true
+          paymentError = error
           print(error)
         }
       }
@@ -41,9 +43,23 @@ struct ContentView: View {
         .alert(isPresented: $paymentSuccessful) {
           Alert(title: Text("Payment Request"), message: Text("Payment was successful"), dismissButton: .default(Text("Ok")))
         }
+        .alert(isPresented: ($paymentFailed)) {
+          var message = ""
+          switch paymentError {
+          case .failedWith(let error):
+            message = error.localizedDescription
+          case .invalidPayRequestStatus(let msg):
+            message = msg
+          case .unableToProcessPayment(let msg):
+            message = msg!
+          default:
+            message = "Unknown error"
+          }
+          return Alert(title: Text("Payment Failed"), message: Text(message), dismissButton: .default(Text("Ok")))
+        }
+
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.blue)
   }
 }
 
