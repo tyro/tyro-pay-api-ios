@@ -19,25 +19,26 @@ final class PayRequestPollerSpec: AsyncSpec {
   class override func spec() {
 
     describe("start") {
-      it("should return the required PayRequestReponse") {
-        let payRequestServiceMock = PayRequestServiceMock(
-          baseUrl: "localhost",
-          httpClient: Container.shared.httpClient(),
-          payRequestResponseJsonString: PayRequestPollerFixtures.payRequestSuccessResponse)
-        let poller = PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 3)
-        var counter = 0
+      context("when it all works") {
+        it("should return the required PayRequestReponse") {
+          let payRequestServiceMock = PayRequestServiceMock(
+            baseUrl: "localhost",
+            httpClient: Container.shared.httpClient(),
+            payRequestResponseJsonString: PayRequestPollerFixtures.payRequestSuccessResponse)
+          let poller = PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 3)
+          var counter = 0
 
-        let result = await poller.start(with: "paySecret") { response in
-          counter += 1
-          return counter < 3 ? false : true
+          let result = await poller.start(with: "paySecret") { response in
+            counter += 1
+            return counter < 3 ? false : true
+          }
+          expect(result).toNot(beNil())
+          expect(result?.status).to(equal(PayRequestStatus.success))
         }
-        expect(result).toNot(beNil())
-        expect(result?.status).to(equal(PayRequestStatus.success))
       }
 
       context("when things go wrong") {
-
-        fit("should return nil if unable to find a pay request ") {
+        it("should return nil if unable to find a pay request ") {
           let payRequestServiceMock = PayRequestServiceMock(
             baseUrl: "localhost",
             httpClient: Container.shared.httpClient(),

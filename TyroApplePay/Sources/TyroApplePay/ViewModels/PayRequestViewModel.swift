@@ -10,7 +10,7 @@ import PassKit
 
 #if os(iOS)
 
-extension Array where Element == PaymentItem {
+fileprivate extension Array where Element == PaymentItem {
 
   func createPKPaymentSummaryItems() -> [PKPaymentSummaryItem] {
     self.map { paymentItem in
@@ -20,7 +20,7 @@ extension Array where Element == PaymentItem {
 
 }
 
-enum PayRequestViewModelState {
+private enum PayRequestViewModelState {
   case started, polling, cancelled, successed, failed(Error)
 }
 
@@ -83,22 +83,20 @@ class PayRequestViewModel: NSObject {
     self.modelState = .started
     self.paySecret = paySecret
 
+    #if DEBUG
     Logger.shared.info("startPayment()")
+    #endif
     if !isApplePayReady() {
-      return .error(.applePayNotReady)
+      return .error(TyroApplePayError.applePayNotReady)
     }
 
     do {
       let payRequest = try await self.payRequestService.fetchPayRequest(with: paySecret)
       guard let payRequest = payRequest else {
-        return .error(.payRequestNotFound)
+        return .error(TyroApplePayError.payRequestNotFound)
       }
       if !self.validPayRequestStatuses.contains(payRequest.status) {
-        return .error(
-          TyroApplePayError.invalidPayRequestStatus(
-            "Pay Request cannot be submitted when status is \(payRequest.status)"
-          )
-        )
+        return .error(TyroApplePayError.invalidPayRequestStatus)
       }
 
       let paymentRequest = self.createPaymentRequest(paymentItems)
@@ -109,11 +107,11 @@ class PayRequestViewModel: NSObject {
       }
 
     } catch {
-      return .error(.failedWith(error))
+      return .error(TyroApplePayError.unableToProcessPayment)
     }
   }
 
-  func handleApplePayResult(
+  private func handleApplePayResult(
     payment: PKPayment) async throws -> PayRequestResponse {
 
     let applePayRequest = try ApplePayRequest.createApplePayRequest(from: payment.token.paymentData)
@@ -121,7 +119,7 @@ class PayRequestViewModel: NSObject {
     return try await self.handleCompleteFlow()
   }
 
-  func handleCompleteFlow() async throws -> PayRequestResponse {
+  private func handleCompleteFlow() async throws -> PayRequestResponse {
     let result = await self.payRequestPoller.start(with: self.paySecret) { payRequestResponse in
       return self.validPayRequestPollingStatuses.contains(payRequestResponse.status)
     }
@@ -159,7 +157,7 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
 
   public func paymentAuthorizationControllerDidFinish(_ controller: PKPaymentAuthorizationController) {
     controller.dismiss {
-      DispatchQueue.main.async {
+      Task.detached { @MainActor in
         switch self.modelState {
         case .successed:
           self.applePayContinuation?.resume(returning: .success)

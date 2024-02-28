@@ -151,13 +151,12 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             paySecret: paySecret,
             tyroApplePay: tyroApplePay)
 
-          await expect {
-            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
-            guard case .error = result else {
-              return .failed(reason: "it should have failed if Apple Pay is not ready")
-            }
-            return .succeeded
-          }.to(succeed())
+          let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+          guard case .error(let tyroApplePayError) = result else {
+            return fail()
+          }
+          expects(tyroApplePayError.description).to(equal(TyroApplePayError.applePayNotReady.description))
+
         }
 
         it("should throw if pay request not found") {
@@ -169,13 +168,11 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             paySecret: paySecret,
             tyroApplePay: tyroApplePay)
 
-          await expect {
-            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
-            guard case .error = result else {
-              return .failed(reason: "it should have failed if pay request not found")
-            }
-            return .succeeded
-          }.to(succeed())
+          let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+          guard case .error(let tyroApplePayError) = result else {
+            return fail()
+          }
+          expects(tyroApplePayError.description).to(equal(TyroApplePayError.payRequestNotFound.description))
         }
 
         it("should throw when PayRequest status is neither AWAITING_PAYMENT_INPUT, AWAITING_AUTHENTICATION or FAILED") {
@@ -191,34 +188,31 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
-          await expect {
-            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
-            guard case .error = result else {
-              return .failed(reason: "it should have failed when PayRequest status is neither AWAITING_PAYMENT_INPUT, AWAITING_AUTHENTICATION or FAILED")
-            }
-            return .succeeded
-          }.to(succeed())
+          let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+          guard case .error(let tyroApplePayError) = result else {
+            return fail()
+          }
+          expects(tyroApplePayError.description).to(equal(TyroApplePayError.invalidPayRequestStatus.description))
         }
 
-        it("should throw TyroApplePayError.failedWith(NetworkError) if unable to fetch Pay Request") {
+        it("should throw NetworkError if unable to fetch Pay Request") {
           let viewModel = setupViewModel(
             payRequestServiceMock: failedPayRequestServiceMock,
             applePayRequestServiceMock: successApplePayRequestServiceMock,
             applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
             payRequestPoller: payRequestPoller(payRequestServiceMock: failedPayRequestServiceMock),
             paySecret: "paySecret",
-            tyroApplePay: tyroApplePay)
+            tyroApplePay: tyroApplePay
+          )
 
-          await expect {
-            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
-            guard case .error = result else {
-              return .failed(reason: "it should have failed if unable to fetch Pay Request")
-            }
-            return .succeeded
-          }.to(succeed())
+          let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+          guard case .error(let tyroApplePayError) = result else {
+            return fail()
+          }
+          expects(tyroApplePayError.description).to(equal(TyroApplePayError.unableToProcessPayment.description))
         }
 
-        it("should invoke the completion closure with an error") {
+        it("should throw when the value returned from Apple is invalid and unable to parse") {
           let viewModel = setupViewModel(
             payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock,
             applePayRequestServiceMock: successApplePayRequestServiceMock,
@@ -227,13 +221,11 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             paySecret: "paySecret",
             tyroApplePay: tyroApplePay)
 
-          await expect {
-            let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
-            guard case .error = result else {
-              return .failed(reason: "it should invoke the completion closure with an error")
-            }
-            return .succeeded
-          }.to(succeed())
+          let result = await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+          guard case .error(let tyroApplePayError) = result else {
+            return fail()
+          }
+          expects(tyroApplePayError.description).to(equal("The data couldn’t be read because it is missing."))
         }
       }
     }

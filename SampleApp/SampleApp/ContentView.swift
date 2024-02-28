@@ -16,7 +16,7 @@ struct ContentView: View {
 
   var body: some View {
     VStack {
-      let paySecret = "$2a$10$RAGdArKtXD8/WlWUVfs55uZmw1iN6o9Sfalbw0whlfdvABUKjwpsK"
+      let paySecret = "paySecret"
       let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
         merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
         allowedCardNetworks: [.visa, .masterCard]
@@ -44,18 +44,7 @@ struct ContentView: View {
           Alert(title: Text("Payment Request"), message: Text("Payment was successful"), dismissButton: .default(Text("Ok")))
         }
         .alert(isPresented: ($paymentFailed)) {
-          var message = ""
-          switch paymentError {
-          case .failedWith(let error):
-            message = error.localizedDescription
-          case .invalidPayRequestStatus(let msg):
-            message = msg
-          case .unableToProcessPayment(let msg):
-            message = msg!
-          default:
-            message = "Unknown error"
-          }
-          return Alert(title: Text("Payment Failed"), message: Text(message), dismissButton: .default(Text("Ok")))
+          return Alert(title: Text("Payment Failed"), message: Text(paymentError?.description ?? "Unknown"), dismissButton: .default(Text("Ok")))
         }
 
     }
