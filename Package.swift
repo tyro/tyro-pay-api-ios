@@ -23,12 +23,14 @@ let package = Package(
     .target(
       name: "TyroApplePay",
 			dependencies: ["SwiftyBeaver", "Factory"],
-			exclude: ["TyroApplePay.xcworkspace", "README.md"],
+			path: "Sources",
+			exclude: ["TyroApplePay.xcworkspace", "README.md", "TyroApplePayTests"],
       plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
     ),
     .testTarget(
-      name: "TyroApplePayPackageTests",
-      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"]
+      name: "TyroApplePayTests",
+      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"],
+			path: "Tests"
     )
   ]
 )

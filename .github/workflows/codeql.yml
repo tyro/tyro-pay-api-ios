@@ -57,7 +57,7 @@ jobs:
         languages: ${{ matrix.language }}
 
     - name: Build
-      run: swift build --package-path TyroApplePay
+      run: swift build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
