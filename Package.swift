@@ -27,7 +27,7 @@ let package = Package(
       plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
     ),
     .testTarget(
-      name: "TyroApplePayTests",
+      name: "Tests",
       dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"],
 			path: "Tests"
     )
