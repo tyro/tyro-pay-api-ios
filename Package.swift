@@ -22,11 +22,14 @@ let package = Package(
   targets: [
     .target(
       name: "TyroApplePay",
-      dependencies: ["SwiftyBeaver", "Factory"],
+			dependencies: ["SwiftyBeaver", "Factory"],
+			path: "Sources",
       plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
     ),
     .testTarget(
-      name: "TyroApplePayPackageTests",
-      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"])
+      name: "Tests",
+      dependencies: ["TyroApplePay", "Quick", "Nimble", "SwiftyBeaver"],
+			path: "Tests"
+    )
   ]
 )
