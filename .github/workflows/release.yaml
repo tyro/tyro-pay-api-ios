@@ -34,4 +34,4 @@ jobs:
           ${{ inputs.release-type }}: true
           generateReleaseNotes: true
           tag: "${{steps.version.outputs.VERSION}}"
-          commit: "main"
+          commit: "master"
