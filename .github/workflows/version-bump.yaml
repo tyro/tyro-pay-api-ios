@@ -31,23 +31,14 @@ jobs:
         id: bump
 
       - name: 'Checkout version-bump branch'
-        id: current_branch
         run: |
           git fetch origin version-bump
           git checkout version-bump
-          echo "current_branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
-      - name: Verify Current Branch
-        if: ${{steps.current_branch.outputs.current_branch != 'version-bump'}}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            core.setFailed('Current branch is not version-bump')
-
-      - name: Update Version to version-bump Branch
+      - name: Update Version
         run: echo "${{steps.bump.outputs.NEW_VERSION}}" > VERSION
 
-      - name: Print Bump Results
+      - name: Print New Version
         run: |
           echo "New Version: ${{steps.bump.outputs.NEW_VERSION}}"
 
