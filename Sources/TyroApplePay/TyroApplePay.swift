@@ -7,12 +7,12 @@ import Foundation
 import PassKit
 import SwiftUI
 
-protocol ApplePayValidator {
+@objc protocol ApplePayValidator {
   static func isApplePayAvailable() -> Bool
   static func canSetupCard(allowedCards: [PKPaymentNetwork]) -> Bool
 }
 
-public class TyroApplePay: NSObject, ApplePayValidator {
+@objc public class TyroApplePay: NSObject, ApplePayValidator {
   internal let config: TyroApplePay.Configuration
 
   public init(config: TyroApplePay.Configuration) {
