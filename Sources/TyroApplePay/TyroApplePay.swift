@@ -6,6 +6,7 @@
 import Foundation
 import PassKit
 import SwiftUI
+import Factory
 
 @objc protocol ApplePayValidator {
   static func isApplePayAvailable() -> Bool
@@ -13,10 +14,11 @@ import SwiftUI
 }
 
 @objc public class TyroApplePay: NSObject, ApplePayValidator {
-  internal let config: TyroApplePay.Configuration
+	internal let viewModel: PayRequestViewModel
 
   public init(config: TyroApplePay.Configuration) {
-    self.config = config
+		self.viewModel = Container.shared.payRequestViewModel()
+		self.viewModel.config = config
   }
 
   public static func isApplePayAvailable() -> Bool {
@@ -26,6 +28,10 @@ import SwiftUI
   public static func canSetupCard(allowedCards: [PKPaymentNetwork]) -> Bool {
     return PKPaymentAuthorizationViewController.canMakePayments(usingNetworks: allowedCards)
   }
+
+	public func startPayment(paySecret: String, paymentItems: [PaymentItem]) async throws -> TyroApplePay.Result {
+		return try await self.viewModel.startPayment(paySecret: paySecret, paymentItems: paymentItems)
+	}
 }
 
 #endif
