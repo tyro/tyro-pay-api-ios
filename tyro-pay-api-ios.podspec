@@ -18,6 +18,7 @@ Pod::Spec.new do |s|
 
   s.homepage         = 'https://github.com/tyro/tyro-pay-api-ios'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
+  s.author           = { 'team-9and3quarters' => 'team-9and3quarters@tyro.com' }
   s.source           = { :git => 'https://github.com/tyro/tyro-pay-api-ios.git', :tag => s.version.to_s }
   s.ios.deployment_target = '10.0'
   s.source_files = 'mypod/Classes/**/*'
