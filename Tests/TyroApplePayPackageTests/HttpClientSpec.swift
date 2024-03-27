@@ -150,7 +150,7 @@ final class CombineHttpClientSpec: QuickSpec {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, jsonString: jsonString))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+            try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink { completion in
                 switch completion {
                 case .finished:
@@ -176,7 +176,7 @@ final class CombineHttpClientSpec: QuickSpec {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
@@ -200,7 +200,7 @@ final class CombineHttpClientSpec: QuickSpec {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, statusCode: 400))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
@@ -224,7 +224,7 @@ final class CombineHttpClientSpec: QuickSpec {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, error: NetworkError.system("some error")))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
