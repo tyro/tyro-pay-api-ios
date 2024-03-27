@@ -134,7 +134,6 @@ final class HttpClient: Networkable {
   override func sendRequest<T>(to endpoint: EndPoint,
                                type: T.Type) throws -> AnyPublisher<T, NetworkError> where T: Decodable {
     guard let urlRequest = endpoint.createRequest() else {
-      precondition(false, "Failed URLRequest")
 			throw NetworkError.invalidURL
     }
     return self.session.dataTaskPublisher(for: urlRequest)

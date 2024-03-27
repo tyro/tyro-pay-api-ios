@@ -172,6 +172,23 @@ final class CombineHttpClientSpec: QuickSpec {
 
       context("when things going wrong") {
 
+				it("should fail when unable create request url") {
+					let endpoint = EndPoint(
+						host: "some wrong domain",
+						scheme: "https",
+						path: "//",
+						method: RequestMethod.get
+					)
+					let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint))
+
+					do {
+						_ = try httpClient.sendRequest(to: endpoint, type: City.self)
+					} catch {
+						expect(city).to(beNil())
+						expect(error).to(matchError(NetworkError.invalidURL))
+					}
+				}
+
         it("should fail when unable to decode response") {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint))
 
