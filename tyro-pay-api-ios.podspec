@@ -20,6 +20,9 @@ Pod::Spec.new do |s|
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'team-9and3quarters' => 'team-9and3quarters@tyro.com' }
   s.source           = { :git => 'https://github.com/tyro/tyro-pay-api-ios.git', :tag => s.version.to_s }
-  s.ios.deployment_target = '10.0'
-  s.source_files = 'tyro-pay-api-ios/Classes/**/*'
+  s.ios.deployment_target = '13.0'
+  s.source_files = 'tyro-pay-api-ios/Sources/**/*'
+
+  s.dependency 'Factory'
+  s.dependency 'SwiftyBeaver'
 end
