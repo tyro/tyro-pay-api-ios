@@ -78,7 +78,7 @@ class Networkable {
   func sendRequest<T: Decodable>(to endpoint: EndPoint, resultHandler: @escaping (Result<T, NetworkError>) -> Void) {
     fatalError("This method must be overriden")
   }
-  func sendRequest<T: Decodable>(to endpoint: EndPoint, type: T.Type) -> AnyPublisher<T, NetworkError> {
+  func sendRequest<T: Decodable>(to endpoint: EndPoint, type: T.Type) throws -> AnyPublisher<T, NetworkError> {
     fatalError("This method must be overriden")
   }
 }
@@ -132,9 +132,9 @@ final class HttpClient: Networkable {
   }
 
   override func sendRequest<T>(to endpoint: EndPoint,
-                               type: T.Type) -> AnyPublisher<T, NetworkError> where T: Decodable {
+                               type: T.Type) throws -> AnyPublisher<T, NetworkError> where T: Decodable {
     guard let urlRequest = endpoint.createRequest() else {
-      precondition(false, "Failed URLRequest")
+			throw NetworkError.invalidURL
     }
     return self.session.dataTaskPublisher(for: urlRequest)
       .subscribe(on: DispatchQueue.global(qos: .background))
