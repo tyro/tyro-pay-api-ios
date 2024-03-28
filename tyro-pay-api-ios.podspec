@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.swift_version    = '5.9'
 
   s.description      = <<-DESC
-  The Pay API SDK for iOS
+  The Pay API SDK for iOS is intended to help partners to integrate seamlessly to the Pay API.
                        DESC
 
   s.homepage         = 'https://github.com/tyro/tyro-pay-api-ios'
