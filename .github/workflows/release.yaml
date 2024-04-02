@@ -35,3 +35,23 @@ jobs:
           generateReleaseNotes: true
           tag: "${{steps.version.outputs.VERSION}}"
           commit: "master"
+
+      - name: setup-cocoapods
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: 1.14.3
+
+      - name: Add connect-cocoapods repo
+        run: |
+          pod repo add connect-cocoapods https://github.com/tyro/connect-cocoapods.git podspec-update
+
+      - name: Checkout Connect Cocoapods
+        uses: actions/checkout@v4
+        with:
+          repository: 'tyro/connect-cocoapods'
+          path: connect-cocoapods
+          clean: true
+
+      - name: Push Pod Spec to Connect Cocoapods
+        run: |
+          pod repo push connect-cocoapods /home/runner/work/tyro-pay-api-ios/tyro-pay-api-ios
