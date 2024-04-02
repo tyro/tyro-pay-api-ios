@@ -45,6 +45,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'tyro/connect-cocoapods'
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
           path: connect-cocoapods
           ref: 'master'
@@ -59,4 +60,4 @@ jobs:
 
       - name: Push Pod Spec to Connect Cocoapods
         run: |
-          pod repo push connect-cocoapods /home/runner/work/tyro-pay-api-ios/tyro-pay-api-ios/TyroApplePay.podspec
+          pod repo push connect-cocoapods ../TyroApplePay.podspec
