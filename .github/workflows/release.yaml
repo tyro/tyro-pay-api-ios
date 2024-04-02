@@ -44,7 +44,7 @@ jobs:
       - name: Checkout Connect Cocoapods
         uses: actions/checkout@v4
         with:
-          repository: 'tyro/connect-cocoapods'
+          repository: 'https://github.com/tyro/connect-cocoapods.git'
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
           path: connect-cocoapods
