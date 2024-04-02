@@ -41,17 +41,22 @@ jobs:
         with:
           version: 1.14.3
 
-      - name: Add connect-cocoapods repo
-        run: |
-          pod repo add connect-cocoapods https://github.com/tyro/connect-cocoapods.git podspec-update
 
       - name: Checkout Connect Cocoapods
         uses: actions/checkout@v4
         with:
           repository: 'tyro/connect-cocoapods'
+          fetch-depth: 1
           path: connect-cocoapods
           clean: true
 
+      - name: Bundle Install
+        run: bundle install
+
+      - name: Add connect-cocoapods repo
+        run: |
+          pod repo add connect-cocoapods https://${{github.actor}}:${{github.token}}@github.com/tyro/connect-cocoapods.git podspec-update
+
       - name: Push Pod Spec to Connect Cocoapods
         run: |
-          pod repo push connect-cocoapods /home/runner/work/tyro-pay-api-ios/tyro-pay-api-ios
+          pod repo push connect-cocoapods /home/runner/work/tyro-pay-api-ios/tyro-pay-api-ios/TyroApplePay.podspec
