@@ -41,13 +41,13 @@ jobs:
         with:
           version: 1.14.3
 
-
       - name: Checkout Connect Cocoapods
         uses: actions/checkout@v4
         with:
           repository: 'tyro/connect-cocoapods'
           fetch-depth: 1
           path: connect-cocoapods
+          ref: 'master'
           clean: true
 
       - name: Bundle Install
