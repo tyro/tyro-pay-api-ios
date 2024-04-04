@@ -35,29 +35,3 @@ jobs:
           generateReleaseNotes: true
           tag: "${{steps.version.outputs.VERSION}}"
           commit: "master"
-
-      - name: setup-cocoapods
-        uses: maxim-lobanov/setup-cocoapods@v1
-        with:
-          version: 1.14.3
-
-      - name: Checkout Connect Cocoapods
-        uses: actions/checkout@v4
-        with:
-          repository: 'https://github.com/tyro/connect-cocoapods.git'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 1
-          path: connect-cocoapods
-          ref: 'master'
-          clean: true
-
-      - name: Bundle Install
-        run: bundle install
-
-      - name: Add connect-cocoapods repo
-        run: |
-          pod repo add connect-cocoapods https://${{github.actor}}:${{github.token}}@github.com/tyro/connect-cocoapods.git podspec-update
-
-      - name: Push Pod Spec to Connect Cocoapods
-        run: |
-          pod repo push connect-cocoapods ../TyroApplePay.podspec
