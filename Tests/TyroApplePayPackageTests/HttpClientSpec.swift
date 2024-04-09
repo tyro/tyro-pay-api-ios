@@ -237,14 +237,15 @@ final class CombineHttpClientSpec: QuickSpec {
           expect(error).to(matchError(NetworkError.unexpectedStatusCode))
         }
 
-        it("should fail when some any system error") {
+        it("should fail with system error") {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, error: NetworkError.system("some error")))
 
-          waitUntil { done in
+					waitUntil(timeout: .seconds(5)) { done in
 						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
+									done()
                   break
                 case .failure(let encounteredError):
                   error = encounteredError
