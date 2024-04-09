@@ -16,7 +16,7 @@ struct ContentView: View {
 
   var body: some View {
     VStack {
-      let paySecret = "paySecret"
+      let paySecret = "pay secret"
       let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
         merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
         allowedCardNetworks: [.visa, .masterCard]
@@ -25,11 +25,7 @@ struct ContentView: View {
 			PayWithApplePayButton {
 				Task.detached { @MainActor in
 					do {
-						let paymentItems: [PaymentItem] = [
-							.custom("Burger", NSDecimalNumber(string: "1.00")),
-							.custom("Total", NSDecimalNumber(string: "1.00"))
-						]
-						let result = try await tyroApplePay.startPayment(paySecret: paySecret, paymentItems: paymentItems)
+						let result = try await tyroApplePay.startPayment(paySecret: paySecret)
 
 						switch result {
 						case .cancelled:
