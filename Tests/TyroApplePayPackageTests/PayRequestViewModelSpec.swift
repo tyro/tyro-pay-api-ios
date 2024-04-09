@@ -112,7 +112,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             tyroApplePayConfig: tyroApplePayConfig)
 
           await expect {
-            let result = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            let result = try await viewModel.startPayment(paySecret: "paySecret")
             guard case .success = result else {
               return .failed(reason: "it should have succeeded.")
             }
@@ -130,7 +130,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						tyroApplePayConfig: tyroApplePayConfig)
 
           await expect {
-            let result = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+            let result = try await viewModel.startPayment(paySecret: "paySecret")
             guard case .cancelled = result else {
               return .failed(reason: "it should have been cancelled")
             }
@@ -153,7 +153,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 
 
 					do {
-						_ = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
 						expects((error as TyroApplePayError).description).to(equal(TyroApplePayError.applePayNotReady.description))
@@ -171,7 +171,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						tyroApplePayConfig: tyroApplePayConfig)
 
 					do {
-						_ = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
 						expects(error.description).to(equal(TyroApplePayError.payRequestNotFound.description))
@@ -193,7 +193,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						tyroApplePayConfig: tyroApplePayConfig)
 
 					do {
-						_ = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
 						expects(error.description).to(equal(TyroApplePayError.invalidPayRequestStatus.description))
@@ -211,7 +211,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 
 
 					do {
-						_ = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError{
 						expects(error.description).to(equal(TyroApplePayError.unableToProcessPayment.description))
@@ -228,7 +228,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						tyroApplePayConfig: tyroApplePayConfig)
 
 					do {
-						_ = try await viewModel.startPayment(paySecret: "paySecret", paymentItems: [])
+						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
 						expects(error.description).to(equal("The data couldn’t be read because it is missing."))

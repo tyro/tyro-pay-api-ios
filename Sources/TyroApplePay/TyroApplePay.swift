@@ -29,8 +29,8 @@ import Factory
     return PKPaymentAuthorizationViewController.canMakePayments(usingNetworks: allowedCards)
   }
 
-	public func startPayment(paySecret: String, paymentItems: [PaymentItem]) async throws -> TyroApplePay.Result {
-		return try await self.viewModel.startPayment(paySecret: paySecret, paymentItems: paymentItems)
+	public func startPayment(paySecret: String) async throws -> TyroApplePay.Result {
+		return try await self.viewModel.startPayment(paySecret: paySecret)
 	}
 }
 

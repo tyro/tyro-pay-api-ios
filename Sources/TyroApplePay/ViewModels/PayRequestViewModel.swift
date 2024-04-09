@@ -31,6 +31,13 @@ class PayRequestViewModel: NSObject {
   var config: TyroApplePay.Configuration!
   var paySecret: String!
 
+	let formatter = {
+		let formatter = NumberFormatter()
+		formatter.maximumFractionDigits = 2
+		formatter.minimumFractionDigits = 0
+		return formatter
+	}()
+
   private let validPayRequestStatuses: [PayRequestStatus] = [
     .awaitingPaymentInput,
     .awaitingAuthentication,
@@ -79,7 +86,7 @@ class PayRequestViewModel: NSObject {
     return self.applePayValidator.isApplePayAvailable()
   }
 
-  public func startPayment(paySecret: String, paymentItems: [PaymentItem]) async throws -> TyroApplePay.Result {
+  public func startPayment(paySecret: String) async throws -> TyroApplePay.Result {
     self.state = .started
     self.paySecret = paySecret
 
@@ -104,7 +111,9 @@ class PayRequestViewModel: NSObject {
 			throw TyroApplePayError.invalidPayRequestStatus
 		}
 
-		let paymentRequest = self.createPaymentRequest(paymentItems)
+		let amount = self.formatter.string(for: payRequest.total.amount / 100)
+
+		let paymentRequest = self.createPaymentRequest([.custom("Total", NSDecimalNumber(string: amount))])
 
 		return try await withCheckedThrowingContinuation { continuation in
 			applePayContinuation = continuation
