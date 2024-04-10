@@ -25,13 +25,13 @@ public extension TyroApplePay {
     let allowedCardNetworks: [PKPaymentNetwork]
 
     public init(merchantIdentifier: String,
-                allowedCardNetworks: [PKPaymentNetwork],
+                allowedCardNetworks: [TyroApplePayCardNetwork],
                 countryCode: String = "AU",
                 currencyCode: String = "AUD") {
       self.merchantIdentifier = merchantIdentifier
-      self.allowedCardNetworks = allowedCardNetworks
       self.countryCode = countryCode
       self.currencyCode = currencyCode
+			self.allowedCardNetworks = allowedCardNetworks.map { $0.rawValue }
     }
   }
 }
