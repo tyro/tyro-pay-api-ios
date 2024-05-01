@@ -214,7 +214,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError{
-						expects(error.description).to(equal(TyroApplePayError.unableToProcessPayment.description))
+						expects(error.description).to(equal(TyroApplePayError.unableToFetchPayRequest.description))
 					}
         }
 
