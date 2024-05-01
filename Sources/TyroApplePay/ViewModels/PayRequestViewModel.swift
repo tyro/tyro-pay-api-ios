@@ -90,9 +90,6 @@ class PayRequestViewModel: NSObject {
     self.state = .started
     self.paySecret = paySecret
 
-    #if DEBUG
-    Logger.shared.info("startPayment()")
-    #endif
     if !isApplePayReady() {
       throw TyroApplePayError.applePayNotReady
     }
@@ -101,7 +98,7 @@ class PayRequestViewModel: NSObject {
     do {
       payRequest = try await self.payRequestService.fetchPayRequest(with: paySecret)
 		} catch {
-			throw TyroApplePayError.unableToProcessPayment
+			throw TyroApplePayError.unableToFetchPayRequest
 		}
 
 		guard let payRequest = payRequest else {
