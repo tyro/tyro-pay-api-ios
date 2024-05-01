@@ -15,7 +15,7 @@ public extension TyroApplePay {
   enum Constants: String, RawRepresentable {
     case payApiBaseUrl = "api.tyro.com"
     case payApiApplePaySandboxInboundBaseUrl = "pay-api-sample-app.pay.inbound.sandbox.applepay.connect.tyro.com"
-    case payPaiApplePayLiveInboundBaseUrl = "pay-api-sample-app.pay.inbound.applepay.connect.tyro.com"
+    case payApiApplePayLiveInboundBaseUrl = "pay-api-sample-app.pay.inbound.applepay.connect.tyro.com"
   }
 
   struct Configuration {
