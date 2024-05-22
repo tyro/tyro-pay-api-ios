@@ -9,18 +9,19 @@ import TyroApplePay
 import SwiftUI
 import PassKit
 
-struct ContentView: View {
+@available(iOS 16, *)
+struct ContentViewIOS16AndAbove: View {
 
-  @State private var paymentSuccessful = false
-  @State private var paymentFailed = false
+	@State private var paymentSuccessful = false
+	@State private var paymentFailed = false
 
-  var body: some View {
-    VStack {
-      let paySecret = "pay secret"
-      let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
-        merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
-        allowedCardNetworks: [.visa, .masterCard]
-      ))
+	var body: some View {
+		VStack {
+			let paySecret = "pay secret"
+			let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
+				merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
+				allowedCardNetworks: [.visa, .masterCard]
+			))
 
 			PayWithApplePayButton {
 				Task.detached { @MainActor in
@@ -46,11 +47,7 @@ struct ContentView: View {
 			.alert(isPresented: ($paymentFailed)) {
 				return Alert(title: Text("Payment Failed"), message: Text("Payment Failed"), dismissButton: .default(Text("Ok")))
 			}
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-  }
-}
-
-#Preview {
-    ContentView()
+		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
+	}
 }
