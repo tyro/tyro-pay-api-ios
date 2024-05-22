@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
   name: "TyroApplePay",
-  platforms: [.macOS(.v13), .iOS(.v16)],
+  platforms: [.macOS(.v13), .iOS(.v14)],
   products: [
     .library(
       name: "TyroApplePay",
