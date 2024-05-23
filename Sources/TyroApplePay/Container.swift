@@ -20,7 +20,7 @@ extension Container {
       #if DEBUG
       TyroApplePay.Constants.payApiApplePaySandboxInboundBaseUrl.rawValue
       #else
-      TyroApplePay.Constants.payPaiApplePayLiveInboundBaseUrl.rawValue
+      TyroApplePay.Constants.payApiApplePayLiveInboundBaseUrl.rawValue
       #endif
     }
   }

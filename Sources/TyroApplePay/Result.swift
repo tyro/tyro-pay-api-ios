@@ -12,7 +12,6 @@ public extension TyroApplePay {
   enum Result {
     case cancelled
     case success
-    case error(TyroApplePayError)
   }
 
 }

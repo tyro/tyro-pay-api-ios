@@ -1,0 +1,37 @@
+name: Release CI
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Select release type'
+        required: true
+        default: 'draft'
+        type: choice
+        options:
+          - draft
+          - prerelease
+          - release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name : Retrieve Version Name
+        id: version
+        run: echo "version=$(<VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Print Version Name
+        run: echo "release version ${{steps.version.outputs.VERSION}}"
+
+      - name: Create GitHub Tag and Release
+        uses: ncipollo/release-action@v1
+        with:
+          ${{ inputs.release-type }}: true
+          generateReleaseNotes: true
+          tag: "${{steps.version.outputs.VERSION}}"
+          commit: "master"

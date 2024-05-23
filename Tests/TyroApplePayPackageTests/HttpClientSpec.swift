@@ -150,7 +150,7 @@ final class CombineHttpClientSpec: QuickSpec {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, jsonString: jsonString))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+            try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink { completion in
                 switch completion {
                 case .finished:
@@ -172,11 +172,28 @@ final class CombineHttpClientSpec: QuickSpec {
 
       context("when things going wrong") {
 
+				it("should fail when unable create request url") {
+					let endpoint = EndPoint(
+						host: "some wrong domain",
+						scheme: "https",
+						path: "//",
+						method: RequestMethod.get
+					)
+					let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint))
+
+					do {
+						_ = try httpClient.sendRequest(to: endpoint, type: City.self)
+					} catch {
+						expect(city).to(beNil())
+						expect(error).to(matchError(NetworkError.invalidURL))
+					}
+				}
+
         it("should fail when unable to decode response") {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
@@ -200,7 +217,7 @@ final class CombineHttpClientSpec: QuickSpec {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, statusCode: 400))
 
           waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
@@ -220,14 +237,15 @@ final class CombineHttpClientSpec: QuickSpec {
           expect(error).to(matchError(NetworkError.unexpectedStatusCode))
         }
 
-        it("should fail when some any system error") {
+        it("should fail with system error") {
           let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, error: NetworkError.system("some error")))
 
-          waitUntil { done in
-            httpClient.sendRequest(to: endpoint, type: City.self)
+					waitUntil(timeout: .seconds(5)) { done in
+						try! httpClient.sendRequest(to: endpoint, type: City.self)
               .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
+									done()
                   break
                 case .failure(let encounteredError):
                   error = encounteredError

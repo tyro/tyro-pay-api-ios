@@ -1,0 +1,52 @@
+name: Update Version
+on:
+  workflow_dispatch:
+    inputs:
+      release-mode:
+        description: 'Select release mode'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+  push:
+    branches:
+      - master
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Retrieve New Version
+        run: bash ./.ci_steps/bump.sh ${{inputs.release-mode}}
+        id: bump
+
+      - name: 'Checkout version-bump branch'
+        run: |
+          git fetch origin version-bump
+          git checkout version-bump
+
+      - name: Update Version
+        run: echo "${{steps.bump.outputs.NEW_VERSION}}" > VERSION
+
+      - name: Print New Version
+        run: |
+          echo "New Version: ${{steps.bump.outputs.NEW_VERSION}}"
+
+      - name: Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: version-bump
+          commit_message: "Bump version from ${{steps.bump.outputs.OLD_VERSION}} to ${{steps.bump.outputs.NEW_VERSION}} [skip ci]"
+          commit_user_name: ${{github.actor}}
+          commit_user_email: "${{github.actor}}@users.noreply.github.com"
+          file_pattern: VERSION

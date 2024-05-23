@@ -14,7 +14,7 @@ struct PayRequestOrigin: Decodable {
 }
 
 struct AmountWithCurrency: Decodable {
-  let amount: Double
+  let amount: Decimal
   let currency: String
 }
 

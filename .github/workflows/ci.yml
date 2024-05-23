@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: swift-actions/setup-swift@v1
       with:
-        swift-version: ${{ matrix.swift }}   
+        swift-version: ${{ matrix.swift }}
     - name: Get swift version
       run: swift --version
     - uses: actions/checkout@v3
