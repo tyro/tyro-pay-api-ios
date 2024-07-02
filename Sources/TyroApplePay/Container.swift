@@ -15,7 +15,7 @@ extension Container {
     self { TyroApplePay.Constants.payApiBaseUrl.rawValue }
   }
 
-  var payApiApplePayBaseUrl: Factory<String> {
+  var payApiApplePayBaseUrlSuffix: Factory<String> {
     self {
       #if DEBUG
       TyroApplePay.Constants.payApiApplePaySandboxInboundBaseUrl.rawValue
@@ -27,6 +27,7 @@ extension Container {
 
   var payRequestViewModel: Factory<PayRequestViewModel> {
     self { PayRequestViewModel(
+							payApiApplePayBaseUrlSuffix: self.payApiApplePayBaseUrlSuffix(),
               applePayRequestService: self.applePayRequestService(),
               payRequestService: self.payRequestService(),
               applePayViewControllerHandler: self.applePayViewControllerHandler(),
@@ -35,7 +36,7 @@ extension Container {
   }
 
   var applePayRequestService: Factory<ApplePayRequestService> {
-    self { ApplePayRequestService(baseUrl: self.payApiApplePayBaseUrl(), httpClient: self.httpClient()) }.singleton
+    self { ApplePayRequestService(httpClient: self.httpClient()) }.singleton
   }
 
   var payRequestService: Factory<PayRequestService> {

@@ -11,7 +11,7 @@ import SwiftUI
 struct SampleApp: App {
     var body: some Scene {
         WindowGroup {
-					if #available(iOS 16, *) {
+					if #available(iOS 17, *) {
 						ContentViewIOS16AndAbove()
 					} else {
 						ContentViewBeforeIOS16()

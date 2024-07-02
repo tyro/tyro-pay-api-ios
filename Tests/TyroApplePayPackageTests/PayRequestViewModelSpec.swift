@@ -26,6 +26,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 		tyroApplePayConfig: TyroApplePay.Configuration
   ) -> PayRequestViewModel {
     let viewModel = PayRequestViewModel(
+			payApiApplePayBaseUrlSuffix: "localhost",
       applePayRequestService: applePayRequestServiceMock,
       payRequestService: payRequestServiceMock,
       applePayViewControllerHandler: applePayViewControllerHandler,
@@ -70,7 +71,6 @@ final class PayRequestViewModelSpec: AsyncSpec  {
       httpClient: Container.shared.httpClient())
 
     let successApplePayRequestServiceMock = ApplePayRequestServiceMock(
-      baseUrl: "localhost",
       httpClient: Container.shared.httpClient(),
       result: Result.success(()))
 
@@ -137,6 +137,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             return .succeeded
 
           }.to(succeed())
+//					expect(successApplePayRequestServiceMock.baseUrl!).to(equal("vgsRoutePrefix.localhost"))
         }
       }
 
@@ -179,11 +180,33 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 
         }
 
+				it("should throw if vgs route prefix is invalid") {
+					let noVGSRoutePrefixPayRequestServiceMock = PayRequestServiceMock(
+						baseUrl: "localhost",
+						httpClient: Container.shared.httpClient(),
+						payRequestResponseJsonString: PayRequestServiceFixtures.noVGSRoutePrefix)
+
+					let viewModel = setupViewModel(
+						payRequestServiceMock: noVGSRoutePrefixPayRequestServiceMock,
+						applePayRequestServiceMock: successApplePayRequestServiceMock,
+						applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
+						payRequestPoller: awaitingPaymentInputPayRequestPoller,
+						paySecret: paySecret,
+						tyroApplePayConfig: tyroApplePayConfig)
+
+					do {
+						_ = try await viewModel.startPayment(paySecret: "paySecret")
+						fail()
+					} catch let error as TyroApplePayError {
+						expects(error.description).to(equal(TyroApplePayError.invalidVGSRoute.description))
+					}
+
+				}
+
         it("should throw when PayRequest status is neither AWAITING_PAYMENT_INPUT, AWAITING_AUTHENTICATION or FAILED") {
           let viewModel = setupViewModel(
             payRequestServiceMock: successPayRequestServiceMock,
             applePayRequestServiceMock: ApplePayRequestServiceMock(
-              baseUrl: "localhost",
               httpClient: Container.shared.httpClient(),
               result: Result.success(())),
             applePayViewControllerHandler: ApplePayViewControllerHandlerStub(

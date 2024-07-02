@@ -14,16 +14,22 @@ import PassKit
 class ApplePayRequestServiceMock: ApplePayRequestService {
 
   var result: Result<Void, NetworkError>
+	var paySecret: String!
+	var payload: ApplePayRequest!
+	var baseUrl: String!
 
-  init(baseUrl: String, httpClient: HttpClient, result: Result<Void, NetworkError>) {
+  init(httpClient: HttpClient, result: Result<Void, NetworkError>) {
     self.result = result
-    super.init(baseUrl: baseUrl, httpClient: httpClient)
+    super.init(httpClient: httpClient)
   }
 
   override func submitPayRequest(with paySecret: String,
                                  payload: ApplePayRequest,
+																 to baseUrl: String,
                                  handler completion: @escaping (Result<Void, NetworkError>) -> Void) {
-
+		self.paySecret = paySecret
+		self.payload = payload
+		self.baseUrl = baseUrl
     completion(self.result)
   }
 }
