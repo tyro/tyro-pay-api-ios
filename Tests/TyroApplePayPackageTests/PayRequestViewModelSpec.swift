@@ -137,7 +137,6 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             return .succeeded
 
           }.to(succeed())
-//					expect(successApplePayRequestServiceMock.baseUrl!).to(equal("vgsRoutePrefix.localhost"))
         }
       }
 

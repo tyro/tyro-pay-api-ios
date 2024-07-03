@@ -27,11 +27,11 @@ extension Container {
 
   var payRequestViewModel: Factory<PayRequestViewModel> {
     self { PayRequestViewModel(
-							payApiApplePayBaseUrlSuffix: self.payApiApplePayBaseUrlSuffix(),
-              applePayRequestService: self.applePayRequestService(),
-              payRequestService: self.payRequestService(),
-              applePayViewControllerHandler: self.applePayViewControllerHandler(),
-              payRequestPoller: self.payRequestPoller()
+					payApiApplePayBaseUrlSuffix: self.payApiApplePayBaseUrlSuffix(),
+					applePayRequestService: self.applePayRequestService(),
+					payRequestService: self.payRequestService(),
+					applePayViewControllerHandler: self.applePayViewControllerHandler(),
+					payRequestPoller: self.payRequestPoller()
     ) }.singleton
   }
 
