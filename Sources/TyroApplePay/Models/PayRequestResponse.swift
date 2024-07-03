@@ -45,4 +45,5 @@ struct PayRequestResponse: Decodable {
   let errorCode: String?
   let errorMessage: String?
   let gatewayCode: String?
+	let vgsRoutePrefix: String?
 }

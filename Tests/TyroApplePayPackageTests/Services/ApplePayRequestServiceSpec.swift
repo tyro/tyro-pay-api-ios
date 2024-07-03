@@ -41,13 +41,14 @@ final class ApplePayRequestServiceSpec: QuickSpec  {
                               body: applePayRequestData)
 
       it("should return a successful result") {
+				let baseUrl = "localhost"
         let mockedSession = createURLSessionMock(endPoint: endpoint)
         let mockedHttpClient = HttpClient(session: mockedSession)
-        let service = ApplePayRequestService(baseUrl: "localhost", httpClient: mockedHttpClient)
+        let service = ApplePayRequestService(httpClient: mockedHttpClient)
         let expectedUrlRequest = endpoint.createRequest()
 
         waitUntil { done in
-          service.submitPayRequest(with: paySecret, payload: applePayRequestData) { result in
+          service.submitPayRequest(with: paySecret, payload: applePayRequestData, to: baseUrl) { result in
             expect(URLProtocolMock.mockedURLRequest[expectedUrlRequest?.url]).to(equal(expectedUrlRequest))
             expect(result).to(beSuccess())
             done()
@@ -56,14 +57,14 @@ final class ApplePayRequestServiceSpec: QuickSpec  {
       }
 
       it("should return a failed result") {
-
+				let baseUrl = "localhost"
         let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, statusCode: 400))
         let applePayRequestData = try ApplePayRequest.createApplePayRequest(from: applePayPaymentData)
-        let service = ApplePayRequestService(baseUrl: "localhost", httpClient: httpClient)
+        let service = ApplePayRequestService(httpClient: httpClient)
         let expectedUrlRequest = endpoint.createRequest()
 
         waitUntil { done in
-          service.submitPayRequest(with: paySecret, payload: applePayRequestData) { result in
+					service.submitPayRequest(with: paySecret, payload: applePayRequestData, to: baseUrl) { result in
             expect(URLProtocolMock.mockedURLRequest[expectedUrlRequest?.url]).to(equal(expectedUrlRequest))
             expect(result).to(beFailure())
             done()

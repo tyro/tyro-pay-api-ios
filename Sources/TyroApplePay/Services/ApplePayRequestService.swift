@@ -10,19 +10,18 @@
 import Foundation
 
 class ApplePayRequestService {
-  private let baseUrl: String
   private let httpClient: HttpClient
 
-  init(baseUrl: String, httpClient: HttpClient) {
-    self.baseUrl = baseUrl
+  init(httpClient: HttpClient) {
     self.httpClient = httpClient
   }
 
   func submitPayRequest(with paySecret: String,
                         payload: ApplePayRequest,
+												to baseUrl: String,
                         handler completion: @escaping (Result<Void, NetworkError>) -> Void) {
 
-    let endpoint = EndPoint(host: self.baseUrl,
+    let endpoint = EndPoint(host: baseUrl,
                             path: "/connect/pay/client/requests",
                             method: .patch,
                             headers: [
@@ -37,9 +36,11 @@ class ApplePayRequestService {
   }
 
   func submitPayRequest(with paySecret: String,
-                        payload: ApplePayRequest) async throws {
+                        payload: ApplePayRequest,
+												to baseUrl: String) async throws {
+
     _ = try await withCheckedThrowingContinuation { continuation in
-      self.submitPayRequest(with: paySecret, payload: payload) { result in
+			self.submitPayRequest(with: paySecret, payload: payload, to: baseUrl) { result in
         continuation.resume(returning: result)
       }
     }

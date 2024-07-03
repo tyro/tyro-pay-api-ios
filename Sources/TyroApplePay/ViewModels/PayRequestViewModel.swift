@@ -30,6 +30,7 @@ class PayRequestViewModel: NSObject {
 
   var config: TyroApplePay.Configuration!
   var paySecret: String!
+	var vgsRoutePrefix: String!
 
 	let formatter = {
 		let formatter = NumberFormatter()
@@ -50,6 +51,7 @@ class PayRequestViewModel: NSObject {
     .awaitingAuthentication
   ]
 
+	private let payApiApplePayBaseUrlSuffix: String
   private let applePayRequestService: ApplePayRequestService
   private let payRequestService: PayRequestService
   private let applePayValidator: ApplePayValidator.Type
@@ -58,11 +60,13 @@ class PayRequestViewModel: NSObject {
 
   private var applePayContinuation: CheckedContinuation<TyroApplePay.Result, Error>?
 
-  init(applePayRequestService: ApplePayRequestService,
-       payRequestService: PayRequestService,
-       applePayViewControllerHandler: ApplePayViewControllerHandler,
-       payRequestPoller: PayRequestPoller,
-       applePayValidator: ApplePayValidator.Type = TyroApplePay.self) {
+	init(payApiApplePayBaseUrlSuffix: String,
+				 applePayRequestService: ApplePayRequestService,
+				 payRequestService: PayRequestService,
+				 applePayViewControllerHandler: ApplePayViewControllerHandler,
+				 payRequestPoller: PayRequestPoller,
+				 applePayValidator: ApplePayValidator.Type = TyroApplePay.self) {
+		self.payApiApplePayBaseUrlSuffix = payApiApplePayBaseUrlSuffix
     self.applePayRequestService = applePayRequestService
     self.payRequestService = payRequestService
     self.applePayViewControllerHandler = applePayViewControllerHandler
@@ -104,6 +108,12 @@ class PayRequestViewModel: NSObject {
 		guard let payRequest = payRequest else {
 			throw TyroApplePayError.payRequestNotFound
 		}
+
+		guard let vgsRoutePrefix = payRequest.vgsRoutePrefix else {
+			throw TyroApplePayError.invalidVGSRoute
+		}
+		self.vgsRoutePrefix = vgsRoutePrefix
+
 		if !self.validPayRequestStatuses.contains(payRequest.status) {
 			throw TyroApplePayError.invalidPayRequestStatus
 		}
@@ -122,7 +132,9 @@ class PayRequestViewModel: NSObject {
     payment: PKPayment) async throws -> PayRequestResponse {
 
     let applePayRequest = try ApplePayRequest.createApplePayRequest(from: payment.token.paymentData)
-    try await self.applePayRequestService.submitPayRequest(with: self.paySecret, payload: applePayRequest)
+		try await self.applePayRequestService.submitPayRequest(with: self.paySecret,
+																													 payload: applePayRequest,
+																													 to: "\(self.vgsRoutePrefix!)\(self.payApiApplePayBaseUrlSuffix)")
     return try await self.handleCompleteFlow()
   }
 
