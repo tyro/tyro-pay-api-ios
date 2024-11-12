@@ -18,12 +18,22 @@ public enum RequestMethod: String {
   case put = "PUT"
 }
 
-public enum NetworkError: Error {
-  case invalidURL
-  case unexpectedStatusCode
-  case decode
-  case unknown
-  case system(String)
+public enum NetworkError: LocalizedError {
+	case invalidURL
+	case unexpectedStatusCode
+	case decode
+	case unknown
+	case system(String)
+
+	public var errorDescription: String? {
+		switch self {
+		case .invalidURL: return "Invalid URL"
+		case .unexpectedStatusCode: return "Unexpected status code"
+		case .decode: return "Unable to decode payload"
+		case .unknown: return "Unknown error"
+		case .system(let message): return message
+		}
+	}
 }
 
 public struct EndPoint {

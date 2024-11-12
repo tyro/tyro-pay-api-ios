@@ -19,16 +19,16 @@ class PayRequestService {
   }
 
   func fetchPayRequest(with paySecret: String,
-                       handler completion: @escaping (Result<PayRequestResponse?, NetworkError>) -> Void) {
+                       handler completion: @escaping (Result<PayRequestResponse, NetworkError>) -> Void) {
     let endpoint = EndPoint(host: self.baseUrl,
                             path: "/connect/pay/client/requests",
                             method: .get,
                             headers: ["Pay-Secret": paySecret])
 
-    self.httpClient.sendRequest<PayRequestResponse?>(to: endpoint, resultHandler: completion)
+    self.httpClient.sendRequest<PayRequestResponse>(to: endpoint, resultHandler: completion)
   }
 
-  func fetchPayRequest(with paySecret: String) async throws -> PayRequestResponse? {
+  func fetchPayRequest(with paySecret: String) async throws -> PayRequestResponse {
     return try await withCheckedThrowingContinuation { continuation in
       self.fetchPayRequest(with: paySecret) { result in
         switch result {

@@ -21,7 +21,7 @@ fileprivate extension Array where Element == PaymentItem {
 }
 
 public enum PayRequestState {
-  case started, polling, cancelled, successed, failed(Error)
+  case started, polling, cancelled, successed, failed(any Error)
 }
 
 class PayRequestViewModel: NSObject {
@@ -163,14 +163,14 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
                                       handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
 
     Task {
-      do {
-        _ = try await self.handleApplePayResult(payment: payment)
-        self.state = .successed
-        completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
-      } catch {
-        self.state = .failed(error)
-        completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
-      }
+			do {
+				_ = try await self.handleApplePayResult(payment: payment)
+				self.state = .successed
+				completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
+			} catch {
+				self.state = .failed(error)
+				completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
+			}
     }
   }
 
@@ -181,7 +181,7 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
         case .successed:
           self.applePayContinuation?.resume(returning: .success)
         case .failed(let error):
-          self.applePayContinuation?.resume(throwing: TyroApplePayError.failedWith(error))
+					self.applePayContinuation?.resume(throwing: TyroApplePayError.failedWith(error))
         default:
           self.applePayContinuation?.resume(returning: .cancelled)
         }

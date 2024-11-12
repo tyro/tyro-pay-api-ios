@@ -20,18 +20,20 @@ class PayRequestServiceMock: PayRequestService {
     super.init(baseUrl: baseUrl, httpClient: httpClient)
   }
 
-  override func fetchPayRequest(with paySecret: String,
-                                handler completion: @escaping (Result<PayRequestResponse?, NetworkError>) -> Void) {
-    if let payRequestResponseJsonString = self.payRequestResponseJsonString {
-      guard let payRequestResponse: PayRequestResponse = try? JSONDecoder().decode(PayRequestResponse.self, from: payRequestResponseJsonString.data(using: .utf8)!) else {
-        completion(Result.success(nil))
-        return
-      }
-      completion(Result.success(payRequestResponse))
-    } else {
-      completion(.failure(NetworkError.unknown))
-    }
-  }
+	override func fetchPayRequest(with paySecret: String) async throws -> PayRequestResponse {
+		return try await withCheckedThrowingContinuation { continuation in
+			if let payRequestResponseJsonString = self.payRequestResponseJsonString {
+				guard let payRequestResponse: PayRequestResponse = try? JSONDecoder().decode(PayRequestResponse.self, from: payRequestResponseJsonString.data(using: .utf8)!) else {
+					continuation.resume(throwing: NetworkError.decode)
+					return
+				}
+				continuation.resume(returning: payRequestResponse)
+			} else {
+				continuation.resume(throwing: NetworkError.unknown)
+			}
+		}
+	}
+
 }
 
 #endif
