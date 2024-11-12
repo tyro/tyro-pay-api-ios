@@ -8,9 +8,9 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TyroApplePay'
-  s.version          = '0.0.3'
+  s.version          = '0.0.4'
   s.summary          = 'The Pay API SDK for iOS'
-  s.swift_version    = '5.9'
+  s.swift_version    = '5.10'
 
   s.description      = <<-DESC
   The Pay API SDK for iOS is intended to help partners to integrate seamlessly to the Pay API.
