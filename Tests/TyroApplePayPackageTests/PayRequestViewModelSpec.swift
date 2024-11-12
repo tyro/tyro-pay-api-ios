@@ -156,7 +156,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
-						expects((error as TyroApplePayError).description).to(equal(TyroApplePayError.applePayNotReady.description))
+						expects((error as TyroApplePayError).errorDescription).to(equal(TyroApplePayError.applePayNotReady.errorDescription))
 					}
 
         }
@@ -174,7 +174,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
-						expects(error.description).to(equal(TyroApplePayError.payRequestNotFound.description))
+						expects(error.errorDescription).to(equal(TyroApplePayError.payRequestNotFound.errorDescription))
 					}
 
         }
@@ -197,7 +197,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
-						expects(error.description).to(equal(TyroApplePayError.invalidVGSRoute.description))
+						expects(error.errorDescription).to(equal(TyroApplePayError.invalidVGSRoute.errorDescription))
 					}
 
 				}
@@ -218,7 +218,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
-						expects(error.description).to(equal(TyroApplePayError.invalidPayRequestStatus.description))
+						expects(error.errorDescription).to(equal(TyroApplePayError.invalidPayRequestStatus.errorDescription))
 					}
         }
 
@@ -236,7 +236,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError{
-						expects(error.description).to(equal(TyroApplePayError.unableToFetchPayRequest.description))
+						expects(error.errorDescription).to(equal(TyroApplePayError.unableToFetchPayRequest.errorDescription))
 					}
         }
 
@@ -253,7 +253,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
-						expects(error.description).to(equal("The data couldn’t be read because it is missing."))
+						expects(error.errorDescription).to(equal("The data couldn’t be read because it is missing."))
 					}
         }
       }

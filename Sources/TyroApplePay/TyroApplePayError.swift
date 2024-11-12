@@ -9,9 +9,9 @@
 
 import Foundation
 
-public enum TyroApplePayError: Error, CustomStringConvertible {
+public enum TyroApplePayError: LocalizedError {
 	case applePayNotReady
-	case failedWith(Error)
+	case failedWith(any Error)
 	case invalidPayRequestStatus
 	case invalidVGSRoute
 	case payRequestFailed
@@ -20,7 +20,7 @@ public enum TyroApplePayError: Error, CustomStringConvertible {
 	case unableToFetchPayRequest
 	case unknown
 
-  public var description: String {
+  public var errorDescription: String? {
     switch self {
 		case .applePayNotReady: return "Apple Pay not ready"
 		case .failedWith(let errorMessage): return errorMessage.localizedDescription
@@ -29,7 +29,7 @@ public enum TyroApplePayError: Error, CustomStringConvertible {
 		case .payRequestFailed: return "Pay request failed"
 		case .payRequestNotFound: return "Pay request not found"
 		case .payRequestTimeout: return "Pay request timeout"
-		case .unableToFetchPayRequest: return "Unable to fetch pay request"
+		case .unableToFetchPayRequest: return "Pay request not found"
 		case .unknown: return "Unknown error"
     }
   }

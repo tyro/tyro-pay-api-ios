@@ -34,7 +34,7 @@ final class PayRequestServiceSpec: QuickSpec  {
           service.fetchPayRequest(with: paySecret) { result in
             expect(result).to(beSuccess { value in
               expect(URLProtocolMock.mockedURLRequest[expectedUrlRequest?.url]).to(equal(expectedUrlRequest))
-              expect(value?.origin.name).to(equal("Demo Pay Request"))
+              expect(value.origin.name).to(equal("Demo Pay Request"))
             })
             done()
           }
