@@ -20,6 +20,6 @@ jobs:
       run: swift --version
     - uses: actions/checkout@v4
     - name: Build
-      run: swift build -v
+      run: swift build
     - name: Run tests
-      run: swift test -v
+      run: swift test
