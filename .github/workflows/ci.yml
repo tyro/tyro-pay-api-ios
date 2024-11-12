@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-14]
-        swift: ["5.9.0"]
+        swift: ["5.10.0"]
     runs-on: ${{ matrix.os }}
 
     steps:
