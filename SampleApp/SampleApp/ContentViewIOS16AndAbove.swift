@@ -19,10 +19,12 @@ struct ContentViewIOS16AndAbove: View {
 
 	var body: some View {
 		VStack {
-			let paySecret = "PAY REQUEST GOES HERE"
+			let paySecret = "$2a$10$GMAJw4hcZgLrniemEgL/gOFWy7DtspLQoF4678sN/foJx/3G4PHnG"
 			let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
 				merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
 				allowedCardNetworks: [.visa, .masterCard]
+			), layout: TyroApplePay.Layout(
+				totalLabel: "MerchantName"
 			))
 
 			PayWithApplePayButton {

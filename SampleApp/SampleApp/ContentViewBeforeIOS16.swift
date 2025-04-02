@@ -30,6 +30,8 @@ struct ContentViewBeforeIOS16: View {
 			let tyroApplePay = TyroApplePay(config: TyroApplePay.Configuration(
 				merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
 				allowedCardNetworks: [.visa, .masterCard]
+			), layout: TyroApplePay.Layout(
+				totalLabel: "MerchantName"
 			))
 
 			PaymentButtonView() {

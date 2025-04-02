@@ -34,6 +34,13 @@ public extension TyroApplePay {
 			self.allowedCardNetworks = allowedCardNetworks.map { $0.rawValue }
     }
   }
+
+	struct Layout {
+		let totalLabel: String
+		public init(totalLabel: String) {
+			self.totalLabel = totalLabel
+		}
+	}
 }
 
 #endif
