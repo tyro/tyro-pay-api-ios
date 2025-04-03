@@ -24,7 +24,7 @@ struct ContentViewIOS16AndAbove: View {
 				merchantIdentifier: "merchant.tyro-pay-api-sample-app", // Your merchant id registered for the app on apple developer center
 				allowedCardNetworks: [.visa, .masterCard]
 			), layout: TyroApplePay.Layout(
-				merchantName: "Hello Ronaldo	"
+				merchantName: "Merchant Name"
 			))
 
 			PayWithApplePayButton {
