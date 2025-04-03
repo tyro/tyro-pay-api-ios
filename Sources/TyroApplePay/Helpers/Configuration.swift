@@ -36,9 +36,9 @@ public extension TyroApplePay {
   }
 
 	struct Layout {
-		let totalLabel: String
-		public init(totalLabel: String) {
-			self.totalLabel = totalLabel
+		let merchantName: String
+		public init(merchantName: String) {
+			self.merchantName = merchantName
 		}
 	}
 }
