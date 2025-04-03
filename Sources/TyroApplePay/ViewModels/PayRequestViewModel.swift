@@ -121,7 +121,7 @@ class PayRequestViewModel: NSObject {
 
 		let amount = self.formatter.string(for: payRequest.total.amount / 100)
 
-		let paymentRequest = self.createPaymentRequest([.custom(layout.totalLabel, NSDecimalNumber(string: amount))])
+		let paymentRequest = self.createPaymentRequest([.custom(layout.merchantName, NSDecimalNumber(string: amount))])
 
 		return try await withCheckedThrowingContinuation { continuation in
 			applePayContinuation = continuation
