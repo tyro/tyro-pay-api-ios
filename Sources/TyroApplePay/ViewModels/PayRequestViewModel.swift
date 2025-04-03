@@ -29,6 +29,7 @@ class PayRequestViewModel: NSObject {
   private var failed: Error?
 
   var config: TyroApplePay.Configuration!
+	var layout: TyroApplePay.Layout!
   var paySecret: String!
 	var vgsRoutePrefix: String!
 
@@ -120,7 +121,7 @@ class PayRequestViewModel: NSObject {
 
 		let amount = self.formatter.string(for: payRequest.total.amount / 100)
 
-		let paymentRequest = self.createPaymentRequest([.custom("Total", NSDecimalNumber(string: amount))])
+		let paymentRequest = self.createPaymentRequest([.custom(layout.totalLabel, NSDecimalNumber(string: amount))])
 
 		return try await withCheckedThrowingContinuation { continuation in
 			applePayContinuation = continuation

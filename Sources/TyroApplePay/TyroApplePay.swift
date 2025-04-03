@@ -16,9 +16,10 @@ import Factory
 @objc public class TyroApplePay: NSObject, ApplePayValidator {
 	internal let viewModel: PayRequestViewModel
 
-  public init(config: TyroApplePay.Configuration) {
+	public init(config: TyroApplePay.Configuration, layout: TyroApplePay.Layout) {
 		self.viewModel = Container.shared.payRequestViewModel()
 		self.viewModel.config = config
+		self.viewModel.layout = layout
   }
 
   public static func isApplePayAvailable() -> Bool {
