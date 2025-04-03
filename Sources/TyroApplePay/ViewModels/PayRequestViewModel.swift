@@ -21,7 +21,7 @@ fileprivate extension Array where Element == PaymentItem {
 }
 
 public enum PayRequestState {
-  case started, polling, cancelled, successed, failed(Error)
+  case started, polling, cancelled, successed, failed(any Error)
 }
 
 class PayRequestViewModel: NSObject {
@@ -29,7 +29,9 @@ class PayRequestViewModel: NSObject {
   private var failed: Error?
 
   var config: TyroApplePay.Configuration!
+	var layout: TyroApplePay.Layout!
   var paySecret: String!
+	var vgsRoutePrefix: String!
 
 	let formatter = {
 		let formatter = NumberFormatter()
@@ -50,6 +52,7 @@ class PayRequestViewModel: NSObject {
     .awaitingAuthentication
   ]
 
+	private let payApiApplePayBaseUrlSuffix: String
   private let applePayRequestService: ApplePayRequestService
   private let payRequestService: PayRequestService
   private let applePayValidator: ApplePayValidator.Type
@@ -58,11 +61,13 @@ class PayRequestViewModel: NSObject {
 
   private var applePayContinuation: CheckedContinuation<TyroApplePay.Result, Error>?
 
-  init(applePayRequestService: ApplePayRequestService,
-       payRequestService: PayRequestService,
-       applePayViewControllerHandler: ApplePayViewControllerHandler,
-       payRequestPoller: PayRequestPoller,
-       applePayValidator: ApplePayValidator.Type = TyroApplePay.self) {
+	init(payApiApplePayBaseUrlSuffix: String,
+				 applePayRequestService: ApplePayRequestService,
+				 payRequestService: PayRequestService,
+				 applePayViewControllerHandler: ApplePayViewControllerHandler,
+				 payRequestPoller: PayRequestPoller,
+				 applePayValidator: ApplePayValidator.Type = TyroApplePay.self) {
+		self.payApiApplePayBaseUrlSuffix = payApiApplePayBaseUrlSuffix
     self.applePayRequestService = applePayRequestService
     self.payRequestService = payRequestService
     self.applePayViewControllerHandler = applePayViewControllerHandler
@@ -104,13 +109,19 @@ class PayRequestViewModel: NSObject {
 		guard let payRequest = payRequest else {
 			throw TyroApplePayError.payRequestNotFound
 		}
+
+		guard let vgsRoutePrefix = payRequest.vgsRoutePrefix else {
+			throw TyroApplePayError.invalidVGSRoute
+		}
+		self.vgsRoutePrefix = vgsRoutePrefix
+
 		if !self.validPayRequestStatuses.contains(payRequest.status) {
 			throw TyroApplePayError.invalidPayRequestStatus
 		}
 
 		let amount = self.formatter.string(for: payRequest.total.amount / 100)
 
-		let paymentRequest = self.createPaymentRequest([.custom("Total", NSDecimalNumber(string: amount))])
+		let paymentRequest = self.createPaymentRequest([.custom(layout.merchantName, NSDecimalNumber(string: amount))])
 
 		return try await withCheckedThrowingContinuation { continuation in
 			applePayContinuation = continuation
@@ -122,7 +133,9 @@ class PayRequestViewModel: NSObject {
     payment: PKPayment) async throws -> PayRequestResponse {
 
     let applePayRequest = try ApplePayRequest.createApplePayRequest(from: payment.token.paymentData)
-    try await self.applePayRequestService.submitPayRequest(with: self.paySecret, payload: applePayRequest)
+		try await self.applePayRequestService.submitPayRequest(with: self.paySecret,
+																													 payload: applePayRequest,
+																													 to: "\(self.vgsRoutePrefix!)\(self.payApiApplePayBaseUrlSuffix)")
     return try await self.handleCompleteFlow()
   }
 
@@ -151,14 +164,14 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
                                       handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
 
     Task {
-      do {
-        _ = try await self.handleApplePayResult(payment: payment)
-        self.state = .successed
-        completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
-      } catch {
-        self.state = .failed(error)
-        completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
-      }
+			do {
+				_ = try await self.handleApplePayResult(payment: payment)
+				self.state = .successed
+				completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.success, errors: nil))
+			} catch {
+				self.state = .failed(error)
+				completion(PKPaymentAuthorizationResult(status: PKPaymentAuthorizationStatus.failure, errors: [error]))
+			}
     }
   }
 
@@ -169,7 +182,7 @@ extension PayRequestViewModel: PKPaymentAuthorizationControllerDelegate {
         case .successed:
           self.applePayContinuation?.resume(returning: .success)
         case .failed(let error):
-          self.applePayContinuation?.resume(throwing: TyroApplePayError.failedWith(error))
+					self.applePayContinuation?.resume(throwing: TyroApplePayError.failedWith(error))
         default:
           self.applePayContinuation?.resume(returning: .cancelled)
         }

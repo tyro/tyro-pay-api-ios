@@ -14,8 +14,8 @@ public extension TyroApplePay {
 
   enum Constants: String, RawRepresentable {
     case payApiBaseUrl = "api.tyro.com"
-    case payApiApplePaySandboxInboundBaseUrl = "pay-api-sample-app.pay.inbound.sandbox.applepay.connect.tyro.com"
-    case payApiApplePayLiveInboundBaseUrl = "pay-api-sample-app.pay.inbound.applepay.connect.tyro.com"
+    case payApiApplePaySandboxInboundBaseUrl = ".pay.inbound.sandbox.applepay.connect.tyro.com"
+    case payApiApplePayLiveInboundBaseUrl = ".pay.inbound.applepay.connect.tyro.com"
   }
 
   struct Configuration {
@@ -34,6 +34,13 @@ public extension TyroApplePay {
 			self.allowedCardNetworks = allowedCardNetworks.map { $0.rawValue }
     }
   }
+
+	struct Layout {
+		let merchantName: String
+		public init(merchantName: String) {
+			self.merchantName = merchantName
+		}
+	}
 }
 
 #endif

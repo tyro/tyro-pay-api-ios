@@ -20,7 +20,7 @@ final class PayRequestPollerSpec: AsyncSpec {
 
     describe("start") {
       context("when it all works") {
-        it("should return the required PayRequestReponse") {
+				it("should return the required PayRequestReponse") {
           let payRequestServiceMock = PayRequestServiceMock(
             baseUrl: "localhost",
             httpClient: Container.shared.httpClient(),
@@ -38,7 +38,7 @@ final class PayRequestPollerSpec: AsyncSpec {
       }
 
       context("when things go wrong") {
-        it("should return nil if unable to find a pay request ") {
+        it("should return nil if unable to find a pay request") {
           let payRequestServiceMock = PayRequestServiceMock(
             baseUrl: "localhost",
             httpClient: Container.shared.httpClient(),
