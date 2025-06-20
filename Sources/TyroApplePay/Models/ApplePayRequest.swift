@@ -15,15 +15,14 @@ public struct ApplePayRequest: Codable {
 
 extension ApplePayRequest {
   static func createApplePayRequest(from paymentData: Data) throws -> ApplePayRequest {
-    let paymentString = String(data: paymentData, encoding: .utf8)
+    let paymentString = String(bytes: paymentData, encoding: .utf8)
     assert(!((paymentString?.count ?? 0) == 0),
            "Using Apple Pay with an iOS Simulator will always return an empty security token.")
 
     let decoder = JSONDecoder()
     let applePayPaymentData = try decoder.decode(ApplePayPaymentData.self, from: paymentData)
     let applePayToken = ApplePayToken(paymentData: applePayPaymentData)
-    let applePayRequest = ApplePayRequest(token: applePayToken)
-    return applePayRequest
+    return ApplePayRequest(token: applePayToken)
   }
 }
 

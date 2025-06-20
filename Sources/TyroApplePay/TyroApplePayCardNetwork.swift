@@ -23,7 +23,7 @@ extension TyroApplePayCardNetwork: RawRepresentable, CaseIterable {
 
 	public init?(rawValue: RawValue) {
 		guard let tyroNetwork = { () -> TyroApplePayCardNetwork? in
-			return TyroApplePayCardNetwork.allCases.first { $0.rawValue == rawValue }
+			TyroApplePayCardNetwork.allCases.first { $0.rawValue == rawValue }
 		}() else { return nil }
 		self = tyroNetwork
 	}

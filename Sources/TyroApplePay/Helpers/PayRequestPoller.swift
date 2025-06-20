@@ -70,9 +70,7 @@ internal class PayRequestPoller {
     }
   }
 
-  private func hasReachedMaxRetries(_ counter: Counter, _ limit: Int) -> Bool {
-    return counter.counter == limit
-  }
+  private func hasReachedMaxRetries(_ counter: Counter, _ limit: Int) -> Bool { counter.counter == limit }
 
 }
 

@@ -27,7 +27,7 @@ class ApplePayViewControllerHandlerStub: ApplePayViewControllerHandler {
 
     let mockedPayment = PaymentMock(token: PaymentTokenMock(jsonString: jsonString))
 
-    delegate.paymentAuthorizationController?(controller, didAuthorizePayment: mockedPayment, handler: { result in
+    delegate.paymentAuthorizationController?(controller, didAuthorizePayment: mockedPayment, handler: { _ in
       delegate.paymentAuthorizationControllerDidFinish(controller)
     })
   }

@@ -34,7 +34,7 @@ struct ContentViewBeforeIOS16: View {
 				merchantName: "MerchantName"
 			))
 
-			PaymentButtonView() {
+			PaymentButtonView {
 				Task.detached { @MainActor in
 					do {
 						let result = try await tyroApplePay.startPayment(paySecret: paySecret)

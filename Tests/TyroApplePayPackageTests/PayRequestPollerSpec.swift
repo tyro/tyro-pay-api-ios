@@ -28,7 +28,7 @@ final class PayRequestPollerSpec: AsyncSpec {
           let poller = PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 3)
           var counter = 0
 
-          let result = await poller.start(with: "paySecret") { response in
+          let result = await poller.start(with: "paySecret") { _ in
             counter += 1
             return counter < 3 ? false : true
           }
@@ -46,7 +46,7 @@ final class PayRequestPollerSpec: AsyncSpec {
           let poller = PayRequestPoller(payRequestService: payRequestServiceMock, pollingInterval: 1_000_000_000, maxRetries: 3)
           var counter = 0
 
-          let result = await poller.start(with: "paySecret") { response in
+          let result = await poller.start(with: "paySecret") { _ in
             counter += 1
             return false
           }

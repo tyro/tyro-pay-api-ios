@@ -10,7 +10,7 @@ import Foundation
 struct PayRequestOrigin: Decodable {
   let orderId: String
   let orderReference: String?
-  let name: String
+  let name: String?
 }
 
 struct AmountWithCurrency: Decodable {

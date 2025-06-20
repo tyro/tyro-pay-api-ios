@@ -23,15 +23,15 @@ import Factory
   }
 
   public static func isApplePayAvailable() -> Bool {
-    return PKPaymentAuthorizationViewController.canMakePayments()
+    PKPaymentAuthorizationViewController.canMakePayments()
   }
 
   public static func canSetupCard(allowedCards: [PKPaymentNetwork]) -> Bool {
-    return PKPaymentAuthorizationViewController.canMakePayments(usingNetworks: allowedCards)
+    PKPaymentAuthorizationViewController.canMakePayments(usingNetworks: allowedCards)
   }
 
 	public func startPayment(paySecret: String) async throws -> TyroApplePay.Result {
-		return try await self.viewModel.startPayment(paySecret: paySecret)
+		try await self.viewModel.startPayment(paySecret: paySecret)
 	}
 }
 
