@@ -8,7 +8,7 @@ on:
 
 jobs:
   review:
-    uses: tyro/gh-platform-technology-workflows/.github/workflows/dependency-review.yml@update-vapor-swiftly
+    uses: tyro/gh-platform-technology-workflows/.github/workflows/dependency-review.yml@master
     with:
       build-tool: swift
     secrets: inherit
