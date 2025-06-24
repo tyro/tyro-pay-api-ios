@@ -11,7 +11,7 @@ import Foundation
 #if DEBUG
 extension Data {
   func printJSON() {
-    if let JSONString = String(data: self, encoding: String.Encoding.utf8) {
+    if let JSONString = String(bytes: self, encoding: .utf8) {
       print(JSONString)
     }
   }

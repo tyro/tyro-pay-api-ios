@@ -15,7 +15,7 @@ import Factory
 import PassKit
 @testable import TyroApplePay
 
-final class PayRequestViewModelSpec: AsyncSpec  {
+final class PayRequestViewModelSpec: AsyncSpec {
 
   class func setupViewModel(
     payRequestServiceMock: PayRequestServiceMock,
@@ -23,7 +23,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
     applePayViewControllerHandler: ApplePayViewControllerHandlerStub,
     payRequestPoller: PayRequestPoller,
     paySecret: String,
-		tyroApplePayConfig: TyroApplePay.Configuration
+    tyroApplePayConfig: TyroApplePay.Configuration,
+    tyroApplePayLayout: TyroApplePay.Layout
   ) -> PayRequestViewModel {
     let viewModel = PayRequestViewModel(
 			payApiApplePayBaseUrlSuffix: "localhost",
@@ -34,6 +35,7 @@ final class PayRequestViewModelSpec: AsyncSpec  {
       applePayValidator: TyroApplePayMock.self)
     viewModel.paySecret = paySecret
     viewModel.config = tyroApplePayConfig
+      viewModel.layout = tyroApplePayLayout
     return viewModel
   }
 
@@ -50,6 +52,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
       merchantIdentifier: "merchant.test",
       allowedCardNetworks: [.visa, .masterCard]
     )
+
+    let tyroApplePayLayout = TyroApplePay.Layout(merchantName: "some merchant name")
 
     let awaitingPaymentInputPayRequestServiceMock = PayRequestServiceMock(
       baseUrl: "localhost",
@@ -109,7 +113,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
             payRequestPoller: successPayRequestPoller,
             paySecret: paySecret,
-            tyroApplePayConfig: tyroApplePayConfig)
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
           await expect {
             let result = try await viewModel.startPayment(paySecret: "paySecret")
@@ -127,7 +132,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             applePayViewControllerHandler: unauthorizedApplePayViewControllerHandlerStub,
             payRequestPoller: successPayRequestPoller,
             paySecret: paySecret,
-						tyroApplePayConfig: tyroApplePayConfig)
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
           await expect {
             let result = try await viewModel.startPayment(paySecret: "paySecret")
@@ -149,8 +155,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
             payRequestPoller: awaitingPaymentInputPayRequestPoller,
             paySecret: paySecret,
-						tyroApplePayConfig: tyroApplePayConfig)
-
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
 					do {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
@@ -168,13 +174,14 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
             payRequestPoller: awaitingPaymentInputPayRequestPoller,
             paySecret: paySecret,
-						tyroApplePayConfig: tyroApplePayConfig)
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
 					do {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
 					} catch let error as TyroApplePayError {
-						expects(error.errorDescription).to(equal(TyroApplePayError.payRequestNotFound.errorDescription))
+                        expects(error.errorDescription).to(equal(TyroApplePayError.unableToFetchPayRequest.errorDescription))
 					}
 
         }
@@ -191,7 +198,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
 						applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
 						payRequestPoller: awaitingPaymentInputPayRequestPoller,
 						paySecret: paySecret,
-						tyroApplePayConfig: tyroApplePayConfig)
+						tyroApplePayConfig: tyroApplePayConfig,
+                        tyroApplePayLayout: tyroApplePayLayout)
 
 					do {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
@@ -212,7 +220,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
               jsonString: ApplePayRequestServiceFixtures.valid),
             payRequestPoller: payRequestPoller(payRequestServiceMock: successPayRequestServiceMock),
             paySecret: "paySecret",
-						tyroApplePayConfig: tyroApplePayConfig)
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
 					do {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
@@ -229,13 +238,13 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             applePayViewControllerHandler: validApplePayViewControllerHandlerStub,
             payRequestPoller: payRequestPoller(payRequestServiceMock: failedPayRequestServiceMock),
             paySecret: "paySecret",
-						tyroApplePayConfig: tyroApplePayConfig)
-
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
 					do {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")
 						fail()
-					} catch let error as TyroApplePayError{
+					} catch let error as TyroApplePayError {
 						expects(error.errorDescription).to(equal(TyroApplePayError.unableToFetchPayRequest.errorDescription))
 					}
         }
@@ -247,7 +256,8 @@ final class PayRequestViewModelSpec: AsyncSpec  {
             applePayViewControllerHandler: invalidApplePayViewControllerHandlerStub,
             payRequestPoller: payRequestPoller(payRequestServiceMock: awaitingPaymentInputPayRequestServiceMock),
             paySecret: "paySecret",
-						tyroApplePayConfig: tyroApplePayConfig)
+            tyroApplePayConfig: tyroApplePayConfig,
+            tyroApplePayLayout: tyroApplePayLayout)
 
 					do {
 						_ = try await viewModel.startPayment(paySecret: "paySecret")

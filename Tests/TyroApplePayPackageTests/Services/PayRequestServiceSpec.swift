@@ -13,7 +13,7 @@ import Combine
 import Foundation
 @testable import TyroApplePay
 
-final class PayRequestServiceSpec: QuickSpec  {
+final class PayRequestServiceSpec: QuickSpec {
 
   override class func spec() {
 

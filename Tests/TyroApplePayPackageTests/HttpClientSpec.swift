@@ -17,7 +17,7 @@ public struct City: Codable, Equatable {
   let name: String
 }
 
-final class CompletionHandlerHttpClientSpec: QuickSpec  {
+final class CompletionHandlerHttpClientSpec: QuickSpec {
 
   override class func spec() {
 
@@ -40,7 +40,7 @@ final class CompletionHandlerHttpClientSpec: QuickSpec  {
         let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, jsonString: jsonString))
 
         waitUntil { done in
-          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) -> Void in
+          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) in
             expect(result).to(beSuccess { city in
               expect(city.name).to(equal("Sydney"))
               expect(URLProtocolMock.mockedURLRequest[endpoint.createRequest()!.url!]).to(equal(endpoint.createRequest()))
@@ -54,7 +54,7 @@ final class CompletionHandlerHttpClientSpec: QuickSpec  {
         let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint))
 
         waitUntil { done in
-          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) -> Void in
+          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) in
             expect(result).to(beFailure { error in
               expect(URLProtocolMock.mockedURLRequest[endpoint.createRequest()!.url!]).to(equal(endpoint.createRequest()))
               expect(error).to(matchError(NetworkError.decode))
@@ -68,7 +68,7 @@ final class CompletionHandlerHttpClientSpec: QuickSpec  {
         let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, error: NetworkError.system("some error")))
 
         waitUntil { done in
-          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) -> Void in
+          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) in
             expect(result).to(beFailure { error in
               expect(URLProtocolMock.mockedURLRequest[endpoint.createRequest()!.url!]).to(equal(endpoint.createRequest()))
               expect(error).to(matchError(NetworkError.system("error")))
@@ -82,7 +82,7 @@ final class CompletionHandlerHttpClientSpec: QuickSpec  {
         let httpClient = HttpClient(session: createURLSessionMock(endPoint: endpoint, statusCode: 400))
 
         waitUntil { done in
-          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) -> Void in
+          httpClient.sendRequest(to: endpoint) { (result: Result<City, NetworkError>) in
             expect(result).to(beFailure { error in
               expect(URLProtocolMock.mockedURLRequest[endpoint.createRequest()!.url!]).to(equal(endpoint.createRequest()))
               expect(error).to(matchError(NetworkError.unexpectedStatusCode))
@@ -102,7 +102,7 @@ final class CompletionHandlerHttpClientSpec: QuickSpec  {
         let httpClient = HttpClient(session: createURLSessionMock(endPoint: wrongEndpoint, statusCode: 400, error: NetworkError.invalidURL))
 
         waitUntil { done in
-          httpClient.sendRequest(to: wrongEndpoint) { (result: Result<City, NetworkError>) -> Void in
+          httpClient.sendRequest(to: wrongEndpoint) { (result: Result<City, NetworkError>) in
             expect(result).to(beFailure { error in
               expect(URLProtocolMock.mockedURLRequest[wrongEndpoint.createRequest()?.url]).to(beNil())
               expect(error).to(matchError(NetworkError.invalidURL))
@@ -246,7 +246,6 @@ final class CombineHttpClientSpec: QuickSpec {
                 switch completion {
                 case .finished:
 									done()
-                  break
                 case .failure(let encounteredError):
                   error = encounteredError
                   done()
@@ -266,7 +265,7 @@ final class CombineHttpClientSpec: QuickSpec {
   }
 }
 
-final class AsyncHttpClientSpec: AsyncSpec  {
+final class AsyncHttpClientSpec: AsyncSpec {
 
   override class func spec() {
 

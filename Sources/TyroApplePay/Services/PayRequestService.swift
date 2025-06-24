@@ -25,11 +25,11 @@ class PayRequestService {
                             method: .get,
                             headers: ["Pay-Secret": paySecret])
 
-    self.httpClient.sendRequest<PayRequestResponse>(to: endpoint, resultHandler: completion)
+    self.httpClient.sendRequest(to: endpoint, resultHandler: completion)
   }
 
   func fetchPayRequest(with paySecret: String) async throws -> PayRequestResponse {
-    return try await withCheckedThrowingContinuation { continuation in
+    try await withCheckedThrowingContinuation { continuation in
       self.fetchPayRequest(with: paySecret) { result in
         switch result {
         case .success(let response):
