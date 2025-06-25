@@ -1,16 +1,16 @@
 name: Release CI
 on:
   workflow_dispatch:
-    inputs:
-      release-type:
-        description: 'Select release type'
-        required: true
-        default: 'draft'
-        type: choice
-        options:
-          - draft
-          - prerelease
-          - release
+    # inputs:
+    #   release-type:
+    #     description: 'Select release type'
+    #     required: true
+    #     default: 'draft'
+    #     type: choice
+    #     options:
+    #       - draft
+    #       - prerelease
+    #       - release
 
 jobs:
   release:
@@ -31,7 +31,7 @@ jobs:
       - name: Create GitHub Tag and Release
         uses: ncipollo/release-action@v1
         with:
-          ${{ inputs.release-type }}: true
+          # ${{ inputs.release-type }}: true
           generateReleaseNotes: true
           tag: "${{steps.version.outputs.VERSION}}"
           commit: "master"
